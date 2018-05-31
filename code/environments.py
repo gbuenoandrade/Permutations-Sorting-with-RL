@@ -1,5 +1,7 @@
 from abc import abstractmethod, ABC
+
 import gym
+import numpy as np
 
 
 class Environment(ABC):
@@ -74,7 +76,7 @@ class MountainCar(DiscreteGymEnv):
 class CartPole(DiscreteGymEnv):
 	def __init__(self):
 		super().__init__('CartPole-v0')
-		
+
 	def step(self, a):
 		observation, r, done, info = super(CartPole, self).step(a)
 		if done and self.it < 200:
@@ -82,6 +84,50 @@ class CartPole(DiscreteGymEnv):
 		return observation, r, done, info
 
 
-if __name__ == '__main__':
-	env = CartPole()
-	print(env.reset())
+class ArraySorting(Environment):
+	def __init__(self, sz, array=None):
+		self.initial_array = np.random.permutation(sz) if array is None else np.array(array)
+		self.cur = self.initial_array.copy()
+		self.sz = sz
+
+		actions = []
+		for i in range(sz):
+			for j in range(i + 1, sz):
+				actions.append((i, j))
+
+		self._actions = actions
+		self._n = len(actions)
+		self._identity = np.arange(sz)
+		self._render = False
+
+	@property
+	def actions(self):
+		return self._actions
+
+	@property
+	def n(self):
+		return self._n
+
+	def sample_action(self):
+		return np.random.choice(self._n)
+
+	def sample_observation(self):
+		return np.random.permutation(self.sz)
+
+	def reset(self, array=None):
+		if array is not None:
+			self.initial_array = np.array(array)
+		self.cur = self.initial_array.copy()
+		return self.cur
+
+	def step(self, a):
+		a, b = self._actions[a]
+		self.cur[a], self.cur[b] = self.cur[b], self.cur[a]
+		done = np.array_equal(self.cur, self._identity)
+		if self._render:
+			print(self.cur)
+			self._render = False
+		return self.cur, -1, done, None
+
+	def render(self, close=False):
+		self._render = True

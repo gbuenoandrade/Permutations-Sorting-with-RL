@@ -1,10 +1,8 @@
 import numpy as np
-from sklearn.preprocessing import StandardScaler
-from sklearn.pipeline import FeatureUnion
 from sklearn.kernel_approximation import RBFSampler
+from sklearn.pipeline import FeatureUnion
+from sklearn.preprocessing import StandardScaler
 
-
-from environments import MountainCar, CartPole
 from util import plot_running_avg
 
 
@@ -34,7 +32,7 @@ class SGDRegressor:
 		self.w = np.random.randn(D) / np.sqrt(D)
 
 	def partial_fit(self, input_, target, eligibility, lr):
-		self.w += lr*(target - input_.dot(self.w))*eligibility
+		self.w += lr * (target - input_.dot(self.w)) * eligibility
 
 	def predict(self, X):
 		X = np.array(X)
@@ -60,15 +58,15 @@ class Model:
 
 	def predict(self, s):
 		X = self._transform(s)
-		assert(len(X.shape) == 2)
+		assert (len(X.shape) == 2)
 		result = np.stack([m.predict(X) for m in self.models]).T
-		assert(len(result.shape) == 2)
+		assert (len(result.shape) == 2)
 		return result
 
 	def update(self, s, a, G, gamma, lambda_):
 		X = self._transform(s)
-		assert(len(X.shape) == 2)
-		self.eligibilities *= gamma*lambda_
+		assert (len(X.shape) == 2)
+		self.eligibilities *= gamma * lambda_
 		self.eligibilities[a] += X[0]
 		self.models[a].partial_fit(X[0], G, self.eligibilities[a], self.lr)
 
@@ -87,7 +85,8 @@ class TDLambdaAgent:
 			n_examples=10000,
 			lr=1e-2,
 			gamma=0.999,
-			lambda_=0.5):
+			lambda_=0.2,
+			max_it=10000):
 		ft = FeatureTransformer(env, gammas, n_components, n_examples)
 		model = Model(env, ft, lr)
 
@@ -95,6 +94,7 @@ class TDLambdaAgent:
 		self.lambda_ = lambda_
 		self.env = env
 		self.model = model
+		self.max_it = max_it
 
 	# noinspection PyPep8Naming,PyShadowingBuiltins
 	def _play_one(self, eps):
@@ -102,7 +102,7 @@ class TDLambdaAgent:
 		done = False
 		total_reward = 0
 		it = 0
-		while not done and it < 10000:
+		while not done and it < self.max_it:
 			action = self.model.sample_action(observation, eps)
 			prev_observation = observation
 			observation, reward, done, info = self.env.step(action)
@@ -121,7 +121,7 @@ class TDLambdaAgent:
 			total_reward = self._play_one(eps)
 			total_rewards[i] = total_reward
 			if i % 25 == 0:
-				print("Episode:", i, "Reward:", total_reward)
+				print("Episode:", i, "Reward:", total_reward, "Eps:", eps)
 
 		if plot_rewards:
 			plot_running_avg(total_rewards)
@@ -129,23 +129,9 @@ class TDLambdaAgent:
 	def play(self):
 		observation = self.env.reset()
 		done = False
-		while not done:
+		max_it = 1000
+		while not done and max_it > 0:
 			self.env.render()
 			action = self.model.sample_action(observation, 0)
 			observation, _, done, _ = self.env.step(action)
-
-
-def main():
-	# eps_provider = lambda i: 0.5/np.sqrt(i+1)
-	eps_provider = lambda i: 0.1*(0.9**i)
-	env = CartPole()
-	agent = TDLambdaAgent(env)
-	# agent.play()
-	agent.train(500, eps_provider)
-	# agent.play()
-
-	# agent.train(300, eps_provider)
-
-
-if __name__ == '__main__':
-	main()
+			max_it -= 1
