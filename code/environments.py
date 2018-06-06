@@ -3,6 +3,9 @@ from abc import abstractmethod, ABC
 import gym
 import numpy as np
 
+REV_OP = 'rev'
+TRANS_OP = 'trans'
+
 
 class Environment(ABC):
 	@property
@@ -123,6 +126,67 @@ class ArraySorting(Environment):
 	def step(self, a):
 		a, b = self._actions[a]
 		self.cur[a], self.cur[b] = self.cur[b], self.cur[a]
+		done = np.array_equal(self.cur, self._identity)
+		if self._render:
+			print(self.cur)
+			self._render = False
+		return self.cur, -1, done, None
+
+	def render(self, close=False):
+		self._render = True
+
+
+class PermutationSorting(Environment):
+	def __init__(self, sz, array=None):
+		self.initial_array = np.random.permutation(sz) if array is None else np.array(array)
+		self.cur = self.initial_array.copy()
+		self.sz = sz
+
+		actions = []
+		for i in range(sz):
+			for j in range(i + 1, sz):
+				actions.append((REV_OP, (i, j)))
+
+		for i in range(sz - 1):
+			for j in range(i, sz - 1):
+				for k in range(j + 1, sz):
+					for l in range(k, sz):
+						actions.append((TRANS_OP, (i, j, k, l)))
+
+		self._actions = actions
+		self._n = len(actions)
+		self._identity = np.arange(sz)
+		self._render = False
+
+	@property
+	def actions(self):
+		return self._actions
+
+	@property
+	def n(self):
+		return self._n
+
+	def sample_action(self):
+		return np.random.choice(self._n)
+
+	def sample_observation(self):
+		return np.random.permutation(self.sz)
+
+	def reset(self, array=None):
+		if array is not None:
+			self.initial_array = np.array(array)
+		self.cur = self.initial_array.copy()
+		return self.cur
+
+	def step(self, a):
+		type_, indices = self._actions[a]
+		if type_ == REV_OP:
+			i, j = indices
+			self.cur = np.concatenate((self.cur[:i], self.cur[i:j + 1][::-1], self.cur[j + 1:]))
+		else:
+			i, j, k, l = indices
+			self.cur = np.concatenate(
+				(self.cur[:i], self.cur[k:l + 1], self.cur[j + 1:k], self.cur[i:j + 1], self.cur[l + 1:]))
 		done = np.array_equal(self.cur, self._identity)
 		if self._render:
 			print(self.cur)

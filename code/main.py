@@ -1,7 +1,8 @@
 import numpy as np
 
-from environments import CartPole, MountainCar, ArraySorting
+from environments import CartPole, MountainCar, ArraySorting, PermutationSorting
 from q_learning import DQLAgent
+from td_lambda import TDLambdaAgent
 
 
 def eps1(i):
@@ -17,9 +18,9 @@ def eps3(i):
 
 
 def main():
-	env = MountainCar()
-	agent = DQLAgent(env)
-	agent.train(1000, eps1)
+	env = PermutationSorting(5)
+	agent = TDLambdaAgent(env)
+	agent.train(500, eps1, True)
 	agent.play()
 
 

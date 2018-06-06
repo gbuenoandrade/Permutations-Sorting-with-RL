@@ -27,9 +27,12 @@ class Model:
 	def _build_dnn(self):
 		model = Sequential()
 
-		model.add(Dense(24, input_dim=self.env.sample_observation().shape[0], activation='relu'))
+		model.add(Dense(256, input_dim=self.env.sample_observation().shape[0], activation='relu'))
 		# model.add(Dropout(0.2))
-		model.add(Dense(24, activation='relu'))
+		model.add(Dense(128, activation='relu'))
+
+		model.add(Dense(32, activation='relu'))
+
 		# model.add(Dropout(0.2))
 		# model.add(Dense(32, activation='relu'))
 		# model.add(Dropout(0.2))
