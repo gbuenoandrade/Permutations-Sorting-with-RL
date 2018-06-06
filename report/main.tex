@@ -1,0 +1,131 @@
+\documentclass[11pt,twoside]{article}
+\usepackage{techrep-PFG-ic}
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+\DeclareMathOperator*{\E}{\mathbb{E}}
+
+\begin{document}
+
+%%% PÁGINA DE CAPA %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Número do relatório TODO
+\TRNumber{13} 
+
+% DATA DE PUBLICAÇÃO (PARA A CAPA)
+%
+\TRYear{18}  % Dois dígitos apenas
+\TRMonth{07} % Numérico, 01-12
+
+% LISTA DE AUTORES PARA CAPA (sem afiliações).
+\TRAuthor{Guilherme Bueno Andrade \and Andre Rodrigues Oliveira \and Zanoni Dias}
+
+% TÍTULO PARA A CAPA (use \\ para forçar quebras de linha).
+\TRTitle{Sorting Permutations by Reversals and Transpositions with Reinforcement Learning}
+
+\TRMakeCover
+
+\markboth{Andrade, Oliveira and Dias}{Sorting Permutations with RL}
+\pagestyle{myheadings}
+
+\title{Sorting Permutations by Reversals and Transpositions\\ with Reinforcement Learning}
+
+\newcommand*\samethanks[1][\value{footnote}]{\footnotemark[#1]}
+\author{Guilherme Bueno Andrade\thanks{gbuenoandrade@gmail.com} \and
+Andre Rodrigues Oliveira\thanks{Institute of Computing, University of Campinas, Brazil.} \and Zanoni Dias\samethanks}
+
+\date{}
+
+\maketitle
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{abstract} 
+\textit{TODO}
+\end{abstract}
+
+\section{Introduction}
+\label{sec:intro}
+
+\textit{TODO}
+
+\section{Reinforcement Learning}
+\label{sec:rl}
+
+% https://medium.freecodecamp.org/an-introduction-to-reinforcement-learning-4339519de419
+
+\subsection{Overview}
+
+Reinforcement Learning (RL), like other branches of Machine Learning, has been drawing a lot of attention from the community in the recent years. Google DeepMind's AlphaGo victory over Lee Sedol~\cite{googlelee} - world champion of the game Go, is one of many examples of recent astonishing applications of the technique. It consists of an agent learning how to accomplish a certain goal based on interactions with the environment.
+
+Initially, the agent receives a state $S0$. Based on that, the agent then takes an action $A0$, ending up at state $S1$ and receiving some reward $R1$. This process keeps going until the agent reaches a terminal state. Its goal is to maximize the total reward it gets along the way; i.e., $\max \sum_{t} R_t$.
+
+In order for the agent to accomplish such task, in value-based RL - the one being considered in this work, it optimizes the value function $V(s)$,
+
+\begin{equation} \label{eq:1}
+	V(s) = \E [R_{t+1} + \gamma R_{t+2} + \gamma^{2} R_{t+3} + \ldots | S_t = s] 
+\end{equation}
+ 
+where $\gamma \in [0,1)$ is a discount rate that makes the agent care more about most likely short term reward, and less about less probable future rewards.
+
+\subsection{Exploitation vs. Exploration}
+ 
+A major concern in RL is the exploitation/explorarion trade-off. Exploration is about exploring new possibilities within the environment and finding out more information about it. Exploitation, on the other hand, is related to exploiting already known information so as to maximize the total reward. 
+
+Initially, the agent has no other option but to randomly explore the environment; however, as it learns about its surroundings, it can fall into the trap of sticking to safe known actions and miss larger rewards that depend on exploring unknown states.
+
+This work uses the Epsilon-greedy strategy to address that problem. It specifies an exploration rate $\epsilon$, which is set to 1 initially. This rate definies the ratio of the steps that will be done randomly. Before selecting an action, the agent generates a random number $x$. If $x > \epsilon$, then it will select the best known action (exploit); otherwise, it will select an action at random (explore). As the agent acquires more knowledge about the environment, $\epsilon$ is progressively reduced.
+
+\subsection{Q-table and the Bellman Equation}
+
+From the value function defined in equation \ref{eq:1}, we have the Q-table, defined as follows.
+
+\begin{equation} \label{eq:2}
+	Q(s, a) = \E [R_{t+1} + \gamma R_{t+2} + \gamma^{2} R_{t+3} + \ldots | S_t = s, A_t = a]
+\end{equation}
+
+Where $s'$ is the state that will be reached after the agent performs action $a$.
+
+This is convenient because it allows the agent to pick the best action that can be performed from state $s$ by simply finding $\operatorname*{arg\,max}_{a} Q(s,a)$.
+
+Furthermore, $Q$ can be expressed in terms of itself. An expression known as the \textit{Bellman Equation} (ref).
+
+\begin{equation} \label{eq:3}
+	Q(s, a) = \E [R_{t+1} + \gamma \sum_{a'} Q(s', a')]
+\end{equation}
+
+The above form is handy because it opens doors for iterative approaches such as dynamic programming (ref).
+
+\subsection{Function Approximation}
+
+If one can calculate the Q-table from equation \ref{eq:3}, they can successfully build an agent that maximizes the total reward. As mentioned in the last section, this can be easily done with dynamic programming. However, as the number of states grows largers, dynamic programming or other iterative approaches becomes unfeasible due to memory and time constraints. Fortunately, it turns out that the Q-table can be approximated instead of having its exact values determined, and it still produces great results. This work tries to achieve that using linear regression and deep neural networks.
+
+\subsection{TD(0) and Monte Carlo Method}
+
+\textit{TODO}
+
+\subsection{TD-Lambda}
+
+\textit{TODO}
+
+\subsection{Deep Q-learning}
+
+\textit{TODO}
+
+\section{Experiment}
+\label{sec:exper}
+
+\subsection{Modeling}
+
+\textit{TODO}
+
+\subsection{Results and Discussion}
+
+\textit{TODO}
+
+\bibliographystyle{abbrv}
+\bibliography{main}
+
+\end{document}
