@@ -60,9 +60,11 @@ Andre Rodrigues Oliveira\thanks{Institute of Computing, University of Campinas, 
 
 Reinforcement Learning (RL), like other branches of Machine Learning, has been drawing a lot of attention from the community in the recent years. Google DeepMind's AlphaGo victory over Lee Sedol~\cite{googlelee} - world champion of the game Go, is one of many examples of recent astonishing applications of the technique. It consists of an agent learning how to accomplish a certain goal based on interactions with the environment.
 
-Initially, the agent receives a state $S0$. Based on that, the agent then takes an action $A0$, ending up at state $S1$ and receiving some reward $R1$. This process keeps going until the agent reaches a terminal state. Its goal is to maximize the total reward it gets along the way; i.e., $\max \sum_{t} R_t$.
+Initially, the agent receives a state $S0$. Based on that, the agent then takes an action $A0$, ending up at state $S1$ and receiving some reward $R1$. This process keeps going until the agent reaches a terminal state. Its goal is to maximize the total reward it gets along the way; i.e., $\max \sum_{t} R_t$. 
 
 In order for the agent to accomplish such task, in value-based RL - the one being considered in this work, it optimizes the value function $V(s)$,
+
+% TODO - define G
 
 \begin{equation} \label{eq:1}
 	V(s) = \E [R_{t+1} + \gamma R_{t+2} + \gamma^{2} R_{t+3} + \ldots | S_t = s] 
@@ -100,19 +102,56 @@ The above form is handy because it opens doors for iterative approaches such as 
 
 \subsection{Function Approximation}
 
-If one can calculate the Q-table from equation \ref{eq:3}, they can successfully build an agent that maximizes the total reward. As mentioned in the last section, this can be easily done with dynamic programming. However, as the number of states grows largers, dynamic programming or other iterative approaches becomes unfeasible due to memory and time constraints. Fortunately, it turns out that the Q-table can be approximated instead of having its exact values determined, and it still produces great results. This work tries to achieve that using linear regression and deep neural networks.
+If one can calculate the Q-table from equation \ref{eq:3}, they can successfully build an agent that maximizes the total reward. As mentioned in the last section, this can be easily done with dynamic programming. However, as the number of states grows largers, dynamic programming and other iterative approaches become unfeasible due to current memory and time limitations. Fortunately, it turns out that the Q-table can be approximated instead of having its exact values determined, and it still produces great results. This work tries to achieve that using linear regression and deep neural networks.
 
-\subsection{TD(0) and Monte Carlo Method}
+\subsection{Temporal Difference Learning and Monte Carlo}
 
-\textit{TODO}
+In Monte Carlo Approaches, the agent plays an entire episode, keeping track of the rewards received at each timestep. After that, it updates the value function for each visited stated based on the following equation.
+
+\begin{equation} \label{eq:4}
+	V(S_t) \leftarrow V(S_t) + \alpha [G_t - V(S_t)]
+\end{equation}
+
+Where $\alpha$ is the learning rate (ref).
+
+Therefore, the agent only learns after an entire episode has been played.
+
+In Temporal Diference Learning, however, the value of $V$ is updated after each timestep. At time $t+1$, the observations made during time $t$ are already being considered. In its simplest form, the method is called TD(0) or one step TD, and its update equation is as follows.
+
+\begin{equation} \label{eq:5}
+	V(S_t) \leftarrow V(S_t) + \alpha [R_{t+1} + \gamma V(S_{t+1}) - V(S_t)]
+\end{equation}
+
+The previous expression is referred as the \textit{TD(0) error}.
+
+\subsection{Q-learning}
+
+Q-learning is another technique based on Temporal Difference Learning to learn the Q-table. The main difference between it and the previous shown technique TD(0) is that Q-learning is off-policy, and TD(0) is on-policy.(ref) This is reflected in its update equation, which is as follows.
+
+\begin{equation} \label{eq:6}
+	Q(s, a) \leftarrow Q(s, a) + \alpha [R_{t+1} + \gamma \max_{a'} Q'(s', a') - Q(s,a)]
+\end{equation}
+
+The fact that there is no constraint regarding the action $a'$, only that it must optimizes $Q'$, makes it an off-policy method.
+
+
+\subsubsection{Deep Q-learning}
+
+% https://storage.googleapis.com/deepmind-data/assets/papers/DeepMindNature14236Paper.pdf
+
+In order to approximate the Q-table to make it feasible even when the number of states is large, since Google AlphaGo's paper (ref), it has becoming common the use of a deep neural network.
+
+This work also makes use of that.
 
 \subsection{TD-Lambda}
+% https://amreis.github.io/ml/reinf-learn/2017/11/02/reinforcement-learning-eligibility-traces.html
 
-\textit{TODO}
+TD(0) is biased as it seems information from a single timestep in order to perform an update. It does not take into account the fact that the action that caused a reward might have happened several timesteps earlier, which can lead to slow convergence. Monte Carlo methods, although not biased, have a lot of variance since they use the rewards of an entire episode to perform its update.
 
-\subsection{Deep Q-learning}
+From equation \ref{eq:4}, we can define the 1-step return, $G_t^{(1)} = R_{t+1} + \gamma V(S_{t+1})$. We can extend the concept to 2-step return, $G_t^{(2)} = R_{t+1} + \gamma R_{t+2} + \gamma^2 V(S_{t+2})$, and, generically, to, $G_t^{(n)} = R_{t+1} + \gamma R_{t+2} + \ldots + \gamma^n V(S_{t+n})$. 
 
-\textit{TODO}
+TD-Lambda methods use a mathematical trick to average all the possible n-step returns into a single one. This is done by introducing a factor $\lambda \in [0, 1]$ and weighting the nth-return with $\gamma^{n-1}$. It can be shown (ref) that when $\lambda = 0$, the method is equivalent to TD(0), and when $\lambda = 1$, equivalent to Monte Carlo. So, intuitively, by setting $0 < \lambda < 1$, we can get a mixture of both methods (ref).
+
 
 \section{Experiment}
 \label{sec:exper}
