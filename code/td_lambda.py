@@ -1,6 +1,6 @@
 import numpy as np
 
-from util import plot_running_avg, plot, v_bound, reverse_subarray
+from util import plot_running_avg, plot, v_upperbound, reverse_subarray
 
 
 # noinspection PyPep8Naming
@@ -109,7 +109,7 @@ class TDLambdaAgent:
 			state = self.env.observation_space.sample()
 			for a, (_, (i, j)) in enumerate(actions):
 				reverse_subarray(state, i, j)
-				next_bound = v_bound(state, self.gamma)
+				next_bound = v_upperbound(state, self.gamma)
 				reverse_subarray(state, i, j)
 				G = -1 + self.gamma * next_bound
 				self.model.update(state, a, G, self.gamma, self.lambda_)

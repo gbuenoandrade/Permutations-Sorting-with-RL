@@ -1,5 +1,30 @@
+import threading
+
 import matplotlib.pyplot as plt
 import numpy as np
+
+
+class AtomicInteger:
+	def __init__(self):
+		self._value = 0
+		self._lock = threading.Lock()
+
+	def inc(self):
+		with self._lock:
+			self._value += 1
+			return self._value
+
+	def dec(self):
+		with self._lock:
+			self._value -= 1
+			return self._value
+
+	def reset(self):
+		self._value = 0
+
+	@property
+	def value(self):
+		return self._value
 
 
 def plot_running_avg(total_rewards):
@@ -87,7 +112,7 @@ def greedy_reversal_sort(v):
 	return ans
 
 
-def v_bound(state, gamma):
+def v_upperbound(state, gamma):
 	steps = greedy_reversal_sort(state)
-	ans = (gamma ** steps - 1) / (gamma - 1)
+	ans = (np.float_power(gamma, steps) - 1) / (gamma - 1)
 	return -ans

@@ -1032,9 +1032,9 @@ class OneHotStateTransformer:
 		self.dimensions = self._n2
 
 	def transform(self, permutation):
-		ans = np.zeros((self._n2,))
+		ans = np.zeros((1, self._n2))
 		for i in range(self._n):
-			ans[self._n * i + permutation[i]] = 1.0
+			ans[0, self._n * i + permutation[i]] = 1.0
 		return ans
 
 
