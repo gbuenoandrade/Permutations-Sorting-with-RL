@@ -85,3 +85,9 @@ def greedy_reversal_sort(v):
 		reverse_subarray(v, x, y)
 		ans += 1
 	return ans
+
+
+def v_bound(state, gamma):
+	steps = greedy_reversal_sort(state)
+	ans = (gamma ** steps - 1) / (gamma - 1)
+	return -ans

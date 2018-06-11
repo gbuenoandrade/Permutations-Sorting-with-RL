@@ -47,7 +47,7 @@ class PermutationSorting(gym.Env):
 						actions.append((TRANS_OP, (i, j, k)))
 
 		self._identity = np.arange(n)
-		self._actions = actions
+		self.actions = actions
 		self.observation_space = PermutationSpace(n)
 		self.action_space = spaces.Discrete(len(actions))
 		self._base = base
@@ -75,7 +75,7 @@ class PermutationSorting(gym.Env):
 		self._render = True
 
 	def step(self, action):
-		type_, indices = self._actions[action]
+		type_, indices = self.actions[action]
 		state = self._state
 
 		if type_ == REV_OP:
