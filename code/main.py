@@ -1,47 +1,37 @@
 import numpy as np
 
-from state_transformers import RBFStateTransformer, IdentityStateTransformer, MaxStateTransformer, OneHotStateTransformer, OneHotRBFStateTransformer
-from td_lambda import TDLambdaAgent
-
+from ddqn import DDQNAgent
 from permutation_sorting import PermutationSorting
+from state_transformers import OneHotStateTransformer
+from util import greedy_reversal_sort, plot, plot_running_avg, EPS
 
 
-class Eps1:
-	def __init__(self):
-		self._eps = 0.5
-		self._min = 0.005
-		self._decay = 0.99
-
-	def eps(self, i):
-		if self._eps > self._min:
-			self._eps *= self._decay
-		return self._eps
-
-
-def eps2(i):
-	return 1.5 / np.sqrt(i + 1)
-
-
-def eps3(i):
-	return 1 * (0.9 ** i)
+def compare_with_greedy(agent, its=100, plot_result=True, exploit_greedy_trace=False):
+	scores = np.empty(its)
+	for i in range(its):
+		permutation = agent.env.observation_space.sample()
+		greedy = greedy_reversal_sort(permutation)
+		rl = agent.solve(permutation, exploit_greedy_trace=exploit_greedy_trace)
+		scores[i] = greedy / (rl + EPS)
+		print('It:', i, ' Ratio: %.3f' % scores[i])
+	if plot_result:
+		plot(scores)
+		plot_running_avg(scores)
+	scores_mean = scores.mean()
+	print('Mean = %.3f' % scores_mean)
+	return scores_mean
 
 
 def main():
-	# v = [3, 0, 1, 2, 4]
-	# v = [2, 4, 1, 3, 0, 6, 5]
-	# n = len(v)
-	n = 7
-	env = PermutationSorting(base=n)
-
-	# st = RBFStateTransformer(env, IdentityStateTransformer(n))
-	# st = MaxStateTransformer(n)
-	# st = OneHotStateTransformer(n)
-	# st = OneHotRBFStateTransformer(env)
-	st = RBFStateTransformer(env, MaxStateTransformer(n))
-
-	agent = TDLambdaAgent(env, state_transformer=st)
-	agent.pretrain(1000)
-	agent.train(1000, Eps1().eps, True, True)
+	n = 5
+	env = PermutationSorting(n)
+	state_transformer = OneHotStateTransformer(n)
+	agent = DDQNAgent(env, state_transformer)
+	# agent.serial_pretrain()
+	agent.parallel_pretrain(rows=100000)
+	# agent.load_pretrain_weights()
+	# agent.train(plot_rewards=True)
+	# compare_with_greedy(agent, plot_result=True, exploit_greedy_trace=False)
 
 
 if __name__ == '__main__':

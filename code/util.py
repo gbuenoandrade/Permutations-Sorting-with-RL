@@ -3,6 +3,8 @@ import threading
 import matplotlib.pyplot as plt
 import numpy as np
 
+EPS = 1e-7
+
 
 class AtomicInteger:
 	def __init__(self):
@@ -27,19 +29,31 @@ class AtomicInteger:
 		return self._value
 
 
-def plot_running_avg(total_rewards):
-	n = len(total_rewards)
+def get_running_avg(x):
+	n = len(x)
 	running_avg = np.empty(n)
 	for t in range(n):
-		running_avg[t] = total_rewards[max(0, t - 100):(t + 1)].mean()
+		running_avg[t] = x[max(0, t - 100):(t + 1)].mean()
+	return running_avg
+
+
+def plot_running_avg(x, title='Running Average'):
+	running_avg = get_running_avg(x)
 	plt.plot(running_avg)
-	plt.title('Running Average')
+	plt.title(title)
 	plt.show()
 
 
 def plot(x, title=''):
-	plt.title(title)
 	plt.plot(x)
+	plt.title(title)
+	plt.show()
+
+
+def plot_x_and_avg(x, title='X and Running Average'):
+	plt.plot(x)
+	plt.plot(get_running_avg(x))
+	plt.title(title)
 	plt.show()
 
 
@@ -92,8 +106,10 @@ def breakpoints(v):
 	return ans
 
 
-def greedy_reversal_sort(v):
+def greedy_reversal_sort(v, trace=None):
 	v = v.copy()
+	if trace is not None:
+		trace.append(v.copy())
 	n = len(v)
 	b = breakpoints(v)
 	ans = 0
@@ -108,6 +124,8 @@ def greedy_reversal_sort(v):
 					x, y = i, j
 		b -= max_score[0]
 		reverse_subarray(v, x, y)
+		if trace is not None:
+			trace.append(v.copy())
 		ans += 1
 	return ans
 
@@ -116,3 +134,23 @@ def v_upperbound(state, gamma):
 	steps = greedy_reversal_sort(state)
 	ans = (np.float_power(gamma, steps) - 1) / (gamma - 1)
 	return -ans
+
+
+class Eps1:
+	def __init__(self):
+		self._eps = 0.5
+		self._min = 0.005
+		self._decay = 0.99
+
+	def eps(self, i):
+		if self._eps > self._min:
+			self._eps *= self._decay
+		return self._eps
+
+
+def eps2(i):
+	return 1.5 / np.sqrt(i + 1)
+
+
+def eps3(i):
+	return 1 * (0.9 ** i)

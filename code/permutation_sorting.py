@@ -22,16 +22,7 @@ class PermutationSpace(gym.Space):
 
 class PermutationSorting(gym.Env):
 	def __init__(
-			self, base, reversals=True, transpositions=False):
-
-		if isinstance(base, int):
-			n = base
-			base = None
-			state = np.random.permutation(n)
-		else:
-			base = np.array(base)
-			n = base.shape[0]
-			state = base.copy()
+			self, n, reversals=True, transpositions=False):
 
 		actions = []
 
@@ -50,19 +41,15 @@ class PermutationSorting(gym.Env):
 		self.actions = actions
 		self.observation_space = PermutationSpace(n)
 		self.action_space = spaces.Discrete(len(actions))
-		self._base = base
-		self._state = state
+		self._state = np.random.permutation(n)
 		self._render = False
 		self._n = n
 		self._breakpoints = 0
 		self._reversals = reversals
 		self._transpositions = transpositions
 
-	def reset(self):
-		if self._base is None:
-			self._state = np.random.permutation(self._n)
-		else:
-			self._state = self._base.copy()
+	def reset(self, forced=None):
+		self._state = np.array(forced) if forced is not None else np.random.permutation(self._n)
 
 		self._breakpoints = breakpoints(self._state)
 		if self._render:

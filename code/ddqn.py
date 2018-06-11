@@ -7,22 +7,19 @@ from keras.layers import Dense
 from keras.models import Sequential
 from keras.optimizers import Adam
 
-from permutation_sorting import PermutationSorting
-from state_transformers import OneHotStateTransformer
-from util import v_upperbound, reverse_subarray, AtomicInteger, plot_running_avg
+from util import v_upperbound, reverse_subarray, AtomicInteger, plot_running_avg, plot, \
+	greedy_reversal_sort
+
+PRETRAIN_WEIGHTS_PATH = './saved_models/pretrain_weights.h5'
+FINAL_WEIGHTS_PATH = './saved_models/final_weights.h5'
 
 
 # Double DQN Agent
 # it uses Neural Network to approximate q function
 # and replay memory & target q network
 class DDQNAgent:
-	def __init__(self, env, state_transformer):
-
-		self.load_model = False
-		# get size of state and action
-
+	def __init__(self, env, state_transformer, initial_epsilon=0.2):
 		self.render = False
-
 		self.env = env
 		self.state_size = state_transformer.dimensions
 		self.action_size = self.env.action_space.n
@@ -31,8 +28,8 @@ class DDQNAgent:
 		# these is hyper parameters for the Double DQN
 		self.discount_factor = 0.99
 		self.learning_rate = 0.001
-		self.epsilon = 1.0
-		self.epsilon_decay = 0.995
+		self.epsilon = initial_epsilon
+		self.epsilon_decay = 0.993
 		self.epsilon_min = 0.01
 		self.batch_size = 32
 		self.train_start = 1000
@@ -46,15 +43,13 @@ class DDQNAgent:
 		# initialize target model
 		self.update_target_model()
 
-		if self.load_model:
-			self.model.load_weights("./save_model/cartpole_ddqn.h5")
-
 	# approximate Q function using Neural Network
 	# state is input and Q Value of each action is output of network
 	def build_model(self):
 		model = Sequential()
-		model.add(Dense(24, input_dim=self.state_size, activation='relu', kernel_initializer='he_uniform'))
+		model.add(Dense(48, input_dim=self.state_size, activation='relu', kernel_initializer='he_uniform'))
 		model.add(Dense(24, activation='relu', kernel_initializer='he_uniform'))
+		model.add(Dense(12, activation='relu', kernel_initializer='he_uniform'))
 		model.add(Dense(self.action_size, activation='linear', kernel_initializer='he_uniform'))
 		model.summary()
 		model.compile(loss='mse', optimizer=Adam(lr=self.learning_rate))
@@ -131,6 +126,8 @@ class DDQNAgent:
 			if i % 100 == 0:
 				print("%.1f %%" % (i / rows * 100))
 		self.model.fit(states, targets, batch_size=self.batch_size, epochs=epochs, verbose=1, validation_split=0.1)
+		self.update_target_model()
+		self.model.save_weights(PRETRAIN_WEIGHTS_PATH)
 
 	def parallel_pretrain(self, rows=10000, epochs=10, n_threads=8):
 		def f(i):
@@ -147,11 +144,21 @@ class DDQNAgent:
 		pool = ThreadPool(n_threads)
 		pool.map(f, range(rows))
 		self.model.fit(states, targets, batch_size=self.batch_size, epochs=epochs, verbose=1, validation_split=0.1)
+		self.update_target_model()
+		self.model.save_weights(PRETRAIN_WEIGHTS_PATH)
 
-	def run_episode(self, max_steps):
+	def load_pretrain_weights(self):
+		self.model.load_weights(PRETRAIN_WEIGHTS_PATH)
+		self.update_target_model()
+
+	def load_final_weights(self):
+		self.model.load_weights(FINAL_WEIGHTS_PATH)
+		self.update_target_model()
+
+	def run_episode(self, max_steps, forced=None):
 		done = False
 		score = 0
-		state = self.env.reset()
+		state = self.env.reset(forced=forced)
 		state = self.state_transformer.transform(state)
 		rem_steps = max_steps
 
@@ -173,6 +180,12 @@ class DDQNAgent:
 			score += reward
 			state = next_state
 
+		# every episode update the target model to be same with model
+		self.update_target_model()
+
+		if self.epsilon > self.epsilon_min:
+			self.epsilon *= self.epsilon_decay
+
 		return score
 
 	def train(self, episodes=1000, max_steps=1000, plot_rewards=True):
@@ -180,27 +193,29 @@ class DDQNAgent:
 		for e in range(episodes):
 			score = self.run_episode(max_steps)
 			scores[e] = score
+			print("Episode:", e, "  score:", score, "  epsilon:", self.epsilon)
 
-			# every episode update the target model to be same with model
-			self.update_target_model()
-
-			print("episode:", e, "  score:", score, "  epsilon:", self.epsilon)
-
-			if self.epsilon > self.epsilon_min:
-				self.epsilon *= self.epsilon_decay
+		self.model.save_weights(FINAL_WEIGHTS_PATH)
 
 		if plot_rewards:
+			plot(scores)
 			plot_running_avg(scores)
 
-
-def main():
-	n = 7
-	env = PermutationSorting(n)
-	state_transformer = OneHotStateTransformer(n)
-	agent = DDQNAgent(env, state_transformer)
-	agent.parallel_pretrain()
-	agent.train()
-
-
-if __name__ == "__main__":
-	main()
+	def solve(self, permutation, its=100, max_steps=100, exploit_greedy_trace=False):
+		ans = None
+		if exploit_greedy_trace:
+			trace = []
+			greedy_reversal_sort(permutation, trace)
+		for _ in range(its):
+			if exploit_greedy_trace:
+				last_ans = None
+				# noinspection PyUnboundLocalVariable
+				for p in trace[::-1]:
+					last_ans = self.run_episode(max_steps=max_steps, forced=p)
+				if ans is None or last_ans > ans:
+					ans = last_ans
+			else:
+				pans = self.run_episode(max_steps=max_steps, forced=permutation)
+				if ans is None or pans > ans:
+					ans = pans
+		return -ans
