@@ -155,10 +155,21 @@ class DDQNAgent:
 		self.model.load_weights(FINAL_WEIGHTS_PATH)
 		self.update_target_model()
 
+	@staticmethod
+	def _is_identity(p):
+		for i in range(len(p)):
+			if p[i] != i:
+				return False
+		return True
+
 	def run_episode(self, max_steps, forced=None):
 		done = False
 		score = 0
 		state = self.env.reset(forced=forced)
+
+		if self._is_identity(state):
+			return 0
+
 		state = self.state_transformer.transform(state)
 		rem_steps = max_steps
 
@@ -197,6 +208,28 @@ class DDQNAgent:
 
 		self.model.save_weights(FINAL_WEIGHTS_PATH)
 
+		if plot_rewards:
+			plot(scores)
+			plot_running_avg(scores)
+
+	def train_exploiting_greedy(self, episodes=1000, max_steps=1000, plot_rewards=True):
+		scores = []
+		e = 0
+		for _ in range(episodes):
+			trace = []
+			greedy_reversal_sort(self.env.observation_space.sample(), trace)
+			for __ in range(3):
+				for permutation in trace[::-1]:
+					score = self.run_episode(max_steps, forced=permutation)
+					scores.append(score)
+					print("Episode:", e, "  score:", score, "  epsilon:", self.epsilon)
+					e += 1
+				print()
+			print()
+
+		self.model.save_weights(FINAL_WEIGHTS_PATH)
+
+		scores = np.array(scores)
 		if plot_rewards:
 			plot(scores)
 			plot_running_avg(scores)

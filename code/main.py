@@ -12,7 +12,7 @@ def compare_with_greedy(agent, its=100, plot_result=True, exploit_greedy_trace=F
 		permutation = agent.env.observation_space.sample()
 		greedy = greedy_reversal_sort(permutation)
 		rl = agent.solve(permutation, exploit_greedy_trace=exploit_greedy_trace)
-		scores[i] = greedy / (rl + EPS)
+		scores[i] = rl / (greedy + EPS)
 		print('It:', i, ' Ratio: %.3f' % scores[i])
 	if plot_result:
 		plot(scores)
@@ -23,15 +23,21 @@ def compare_with_greedy(agent, its=100, plot_result=True, exploit_greedy_trace=F
 
 
 def main():
-	n = 5
+	n = 8
 	env = PermutationSorting(n)
 	state_transformer = OneHotStateTransformer(n)
 	agent = DDQNAgent(env, state_transformer)
-	# agent.serial_pretrain()
-	agent.parallel_pretrain(rows=100000)
+
+	agent.parallel_pretrain(rows=10000)
+
 	# agent.load_pretrain_weights()
-	# agent.train(plot_rewards=True)
-	# compare_with_greedy(agent, plot_result=True, exploit_greedy_trace=False)
+	# agent.train_exploiting_greedy(episodes=200, plot_rewards=True)
+	# agent.load_final_weights()
+
+	# agent.train(episodes=200, plot_rewards=True)
+
+
+	# compare_with_greedy(agent, plot_result=True, exploit_greedy_trace=True)
 
 
 if __name__ == '__main__':
