@@ -4,8 +4,10 @@
 \usepackage[utf8]{inputenc}
 \usepackage{amsmath}
 \usepackage{amssymb}
+\usepackage{array}% http://ctan.org/pkg/array
 
 \DeclareMathOperator*{\E}{\mathbb{E}}
+\DeclareMathOperator*{\argmax}{\arg\!\max}
 
 \begin{document}
 
@@ -58,19 +60,18 @@ Andre Rodrigues Oliveira\thanks{Institute of Computing, University of Campinas, 
 
 \subsection{Overview}
 
-Reinforcement Learning (RL), like other branches of Machine Learning, has been drawing a lot of attention from the community in the recent years. Google DeepMind's AlphaGo victory over Lee Sedol~\cite{googlelee} - world champion of the game Go, is one of many examples of recent astonishing applications of the technique. It consists of an agent learning how to accomplish a certain goal based on interactions with the environment.
+Reinforcement Learning (RL), like other branches of Machine Learning, has been drawing a lot of attention from the community in the recent years. Google DeepMind's AlphaGo victory over Lee Sedol~\cite{googlelee} - world champion of the game Go, is one of many examples of recent astonishing applications of the technique. It is based an agent learning how to accomplish a certain goal based on interactions with the environment.
 
-Initially, the agent receives a state $S0$. Based on that, the agent then takes an action $A0$, ending up at state $S1$ and receiving some reward $R1$. This process keeps going until the agent reaches a terminal state. Its goal is to maximize the total reward it gets along the way; i.e., $\max \sum_{t} R_t$. 
+RL can be thought of as a sequence of episodes. Each of which consists of the agent initially at an initial state $S_0$. Then, based on a policy $\pi$, where a policy is a function that maps states to actions, it takes an action $a$, ending up at state $S_1$ and receiving some reward $R_1$. This process keeps going until the agent reaches a terminal state. Its goal is to find a function $\pi*$, known as optimal policy, that maximizes the cumulative discounted reward:
 
-In order for the agent to accomplish such task, in value-based RL - the one being considered in this work, it optimizes the value function $V(s)$,
-
-% TODO - define G
-
-\begin{equation} \label{eq:1}
-	V(s) = \E [R_{t+1} + \gamma R_{t+2} + \gamma^{2} R_{t+3} + \ldots | S_t = s] 
-\end{equation}
- 
-where $\gamma \in [0,1)$ is a discount rate that makes the agent care more about most likely short term reward, and less about less probable future rewards.
+\begin{gather}
+	G(t) = \sum_{\tau = 0}^{\infty} \gamma ^ {\tau} R_{t + \tau + 1}
+	,
+\intertext{Where:}
+	\begin{tabular}{>{$}r<{$}@{\ :\ }l}
+		\gamma \in [0,1) & is a discount rate to highlight most likely short-term rewards
+	\end{tabular}\nonumber
+\end{gather}
 
 \subsection{Exploitation vs. Exploration}
  
@@ -82,75 +83,132 @@ This work uses the Epsilon-greedy strategy to address that problem. It specifies
 
 \subsection{Q-table and the Bellman Equation}
 
-From the value function defined in equation \ref{eq:1}, we have the Q-table, defined as follows.
+In value-based RL, the branch being considered in this work, the efforts are concentraded on maximizing the value function $V_\pi$:
 
-\begin{equation} \label{eq:2}
-	Q(s, a) = \E [R_{t+1} + \gamma R_{t+2} + \gamma^{2} R_{t+3} + \ldots | S_t = s, A_t = a]
+\begin{equation}
+	V_\pi(s) = \mathbb{E}_{\pi} [G(t)\ |\ S_t = s]
 \end{equation}
 
-Where $s'$ is the state that will be reached after the agent performs action $a$.
+It tells the agent the expected future reward it will get at each state. $V_\pi$ can be generalized so as to also include actions, it is known as Q-table:
 
-This is convenient because it allows the agent to pick the best action that can be performed from state $s$ by simply finding $\operatorname*{arg\,max}_{a} Q(s,a)$.
-
-Furthermore, $Q$ can be expressed in terms of itself. An expression known as the \textit{Bellman Equation} (ref).
-
-\begin{equation} \label{eq:3}
-	Q(s, a) = \E [R_{t+1} + \gamma \sum_{a'} Q(s', a')]
+\begin{equation} \label{qtable}
+	Q^\pi(s, a) = \mathbb{E}_{\pi} [G(t)\ |\ S_t = s,\ A_t = a]
 \end{equation}
 
-The above form is handy because it opens doors for iterative approaches such as dynamic programming (ref).
+The previous definition is convenient because it allows the agent to pick the best action that can be performed from state $s$ by simply finding $\operatorname*{arg\,max}_{a} Q^\pi(s,a)$.
+
+Furthermore, $Q$ can be expressed in terms of itself. An expression known as the Bellman Equation [ref]:
+
+\begin{gather}
+	Q^\pi(s, a) = \mathbb{E}_{\pi} [R_{t+1} + \gamma \sum_{a'} Q^\pi(s', a')]
+	,
+\intertext{Where:}
+	\begin{tabular}{>{$}r<{$}@{\ :\ }l}
+		s' & is the state reached after action $a$ is taken from state $s$ \\
+		a' & is an action that can be taken from $s'$
+	\end{tabular}\nonumber
+\end{gather}
+
+The above form can be used alongside dynamic programming to develop iterative approaches [ref].
 
 \subsection{Function Approximation}
 
-If one can calculate the Q-table from equation \ref{eq:3}, they can successfully build an agent that maximizes the total reward. As mentioned in the last section, this can be easily done with dynamic programming. However, as the number of states grows largers, dynamic programming and other iterative approaches become unfeasible due to current memory and time limitations. Fortunately, it turns out that the Q-table can be approximated instead of having its exact values determined, and it still produces great results. This work tries to achieve that using linear regression and deep neural networks.
+If one can calculate the Q-table from equation \ref{qtable}, they could trivially come up with a very great policy. At each state $s$, the agent should simply be greedy and select the action $a$ that maximizes $Q^\pi(s, a)$. As mentioned in the last section, finding the Q-table can be easily done with dynamic programming.
 
-\subsection{Temporal Difference Learning and Monte Carlo}
+However, as the number of states grows largers, dynamic programming and other iterative approaches become unfeasible due to our computers' memory and time limitations. Fortunately, it turns out that the Q-table can be approximated instead of having its exact values determined, and it will still produce great results [ref]. This work tries to achieve that using both linear regression and deep neural networks.
 
-In Monte Carlo Approaches, the agent plays an entire episode, keeping track of the rewards received at each timestep. After that, it updates the value function for each visited stated based on the following equation.
+\subsection{Monte Carlo and Temporal Difference Learning}
 
-\begin{equation} \label{eq:4}
-	V(S_t) \leftarrow V(S_t) + \alpha [G_t - V(S_t)]
-\end{equation}
+In Monte Carlo Approaches, the agent plays an entire episode, keeping track of the rewards received at each timestep so it can calculate the cumulative discounted reward. After that, it updates the value function for each visited stated based on the expression [ref]:
 
-Where $\alpha$ is the learning rate (ref).
+\begin{gather}
+	V(S_t) \leftarrow V(S_t) + \alpha [G(t) - V(S_t)]
+	,
+\intertext{Where:}
+	\begin{tabular}{>{$}r<{$}@{\ :\ }l}
+		\alpha & is the learning rate
+	\end{tabular}\nonumber
+\end{gather}
 
-Therefore, the agent only learns after an entire episode has been played.
+Therefore, the agent only learns after an entire episode has been played. In Temporal Diference Learning, however, the value of $V$ is updated after each timestep. At time $t+1$, the observations made during time $t$ are already being considered. In its simplest form, the method is called TD(0) or 1-step TD, and its update equation is as follows:
 
-In Temporal Diference Learning, however, the value of $V$ is updated after each timestep. At time $t+1$, the observations made during time $t$ are already being considered. In its simplest form, the method is called TD(0) or one step TD, and its update equation is as follows.
-
-\begin{equation} \label{eq:5}
+\begin{equation} \label{td0}
 	V(S_t) \leftarrow V(S_t) + \alpha [R_{t+1} + \gamma V(S_{t+1}) - V(S_t)]
 \end{equation}
 
-The previous expression is referred as the \textit{TD(0) error}.
-
-\subsection{Q-learning}
-
-Q-learning is another technique based on Temporal Difference Learning to learn the Q-table. The main difference between it and the previous shown technique TD(0) is that Q-learning is off-policy, and TD(0) is on-policy.(ref) This is reflected in its update equation, which is as follows.
-
-\begin{equation} \label{eq:6}
-	Q(s, a) \leftarrow Q(s, a) + \alpha [R_{t+1} + \gamma \max_{a'} Q'(s', a') - Q(s,a)]
-\end{equation}
-
-The fact that there is no constraint regarding the action $a'$, only that it must optimizes $Q'$, makes it an off-policy method.
-
-
-\subsubsection{Deep Q-learning}
-
-% https://storage.googleapis.com/deepmind-data/assets/papers/DeepMindNature14236Paper.pdf
-
-In order to approximate the Q-table to make it feasible even when the number of states is large, since Google AlphaGo's paper (ref), it has becoming common the use of a deep neural network.
-
-This work also makes use of that.
+The right-hand side of the previous equation is referred to as the TD(0) error.
 
 \subsection{TD-Lambda}
 % https://amreis.github.io/ml/reinf-learn/2017/11/02/reinforcement-learning-eligibility-traces.html
 
-TD(0) is biased as it seems information from a single timestep in order to perform an update. It does not take into account the fact that the action that caused a reward might have happened several timesteps earlier, which can lead to slow convergence. Monte Carlo methods, although not biased, have a lot of variance since they use the rewards of an entire episode to perform its update.
+TD(0) is biased as it relies on information from a single timestep to perform its updates. It does not take into account the fact that the action that caused a reward might have happened several timesteps earlier, which can lead to slow convergence [ref]. Monte Carlo methods, although not biased, have a lot of variance since they use the rewards of an entire episode in order to perform updates [ref].
 
-From equation \ref{eq:4}, we can define the 1-step return, $G_t^{(1)} = R_{t+1} + \gamma V(S_{t+1})$. We can extend the concept to 2-step return, $G_t^{(2)} = R_{t+1} + \gamma R_{t+2} + \gamma^2 V(S_{t+2})$, and, generically, to, $G_t^{(n)} = R_{t+1} + \gamma R_{t+2} + \ldots + \gamma^n V(S_{t+n})$. 
+To address that, from equation \ref{td0}, we can define the 1-step return, $G_t^{(1)} = R_{t+1} + \gamma V(S_{t+1})$. We can extend the concept further to 2-step return, $G_t^{(2)} = R_{t+1} + \gamma R_{t+2} + \gamma^2 V(S_{t+2})$, and, generically, to, $G_t^{(n)} = R_{t+1} + \gamma R_{t+2} + \ldots + \gamma^n V(S_{t+n})$. 
 
-TD-Lambda methods use a mathematical trick to average all the possible n-step returns into a single one. This is done by introducing a factor $\lambda \in [0, 1]$ and weighting the nth-return with $\gamma^{n-1}$. It can be shown (ref) that when $\lambda = 0$, the method is equivalent to TD(0), and when $\lambda = 1$, equivalent to Monte Carlo. So, intuitively, by setting $0 < \lambda < 1$, we can get a mixture of both methods (ref).
+TD-Lambda methods use a mathematical trick to average all the possible n-step returns into a single one. This is done by introducing a factor $\lambda \in [0, 1]$ and weighting the nth-return with $\gamma^{n-1}$. It can be shown [ref] that when $\lambda = 0$, the method is equivalent to TD(0), and when $\lambda = 1$, equivalent to Monte Carlo. So, intuitively, by setting $0 < \lambda < 1$, we can get a mixture of both methods [ref].
+
+\subsection{Q-learning}
+
+Q-learning is another technique based on Temporal Difference Learning to learn the Q-table. The main difference between it and the previous shown techniques is that Q-learning is off-policy, while TD(0) and TD-Lambda are on-policy [ref]. This is reflected in its update equation, derived from the Bellman Equation [ref]:
+
+\begin{equation} \label{qlearning}
+	Q(s, a) \leftarrow Q(s, a) + \alpha [R_{t+1} + \gamma \max_{a'} Q(s', a') - Q(s,a)]
+\end{equation}
+
+The fact that there is no constraint regarding the action $a'$, only that it must optimizes $Q$, makes it an off-policy method [ref].
+
+\subsubsection{Deep Q-learning}
+
+% https://storage.googleapis.com/deepmind-data/assets/papers/DeepMindNature14236Paper.pdf
+% https://arxiv.org/abs/1509.06461
+% https://jaromiru.com/2016/11/07/lets-make-a-dqn-double-learning-and-prioritized-experience-replay/
+% Watkins Ch. and Dayan P. – Q-learning, Machine Learning 8, 1992 q learning convergence\
+% https://jaromiru.com/2016/09/27/lets-make-a-dqn-theory/#fnref-38-6
+
+In order to approximate the Q-table to make using it feasible even when the number of states is very large, since Google AlphaGo's paper [ref], it has becoming common the use of a deep neural network. Even though standard Q-learning is proven to converge when there are finite states and each pair state-action is presented repeatedly [ref], the same proof does not hold when neural networks are being used to calculate $Q$. To face with this issue, this work makes use of several ideas found in the literature [ref] to stabilize the training. They are presented in the following subsections.
+
+\subsubsection{Experience Replay}
+
+During each step of an episode, our estimation can be shifted according to equation \ref{qlearning}. It is reasonable to think that as more truth is being introduced into the system, it will eventually converge; however, this is often not true. One of the reasons is that samples arrive in order they are experienced and as such are highly correlated. Also, by throwing away our samples immediately after we use it, we are not extracting all the knowledge they carry.
+
+Experience replay address that by storing samples into a queue and during each learning step, it samples a random batch and performs gradient descend on it. As samples get old, they are gradually discarded.
+
+\subsubsection{Target Network}
+
+The points $Q(s, a)$ and $Q(s', a')$ in equation \ref{qlearning} are very close together as $s'a$ is a state reachable from $s$. That being so, updates to one of them influence the other, which in turn can lead to instabilities.
+
+To overcome that, a second network, called target network, can be used to provide more stable $\widetilde{Q}$ values. This second network is a mery copy of the first one; however, it does not get updated every simulation step. Instead, it stays frozen in time, and only after several steps it is updated by copying the weights from the first network. The introduction of the target network changes our update equation to the following:
+
+\begin{equation} \label{new_qlearning}
+	Q(s, a) \leftarrow Q(s, a) + \alpha [R_{t+1} + \gamma \max_{a'}\widetilde{Q}(s', a') - Q(s,a)]
+\end{equation}
+
+
+\subsubsection{Double Learning}
+
+Due to the $\max$ term presented in both equations \ref{qlearning} and \ref{new_qlearning}, the approximation tends to overstimate the Q function value, which can severely impact on stability of the algorithm[ref]. A solution proposed by Hado van Hasselt (2010) [ref], called Double Learning, consists of two Q functions, $Q_1$ and $Q_2$, that are independently learned. One function is then used to determine the maximizing action and second to estimate its value. As we are already making use of two different networks, Hado van Hasselt's approach can be easily introduced to the update equation \ref{new_qlearning}. Its augmented version is as follows:
+
+\begin{equation}
+	Q(s, a) \leftarrow Q(s, a) + \alpha [R_{t+1} + \gamma \widetilde{Q}(s', \argmax_{a'}{Q(s', a')}) - Q(s,a)]
+\end{equation}
+
+
+
+% \begin{equation}
+% 	% \underset{x}{\operatorname{argmax}} 
+% 	% \argmax 1
+% 	1
+
+
+% 	% Q(s, a) \leftarrow Q(s, a) + \alpha [R_{t+1} + \gamma \widetilde{Q}(s', a') - Q(s,a)]
+% \end{equation}
+
+
+
+
+% Utilizing known truth
+% Some values of the Q function are known exactly. These are those at the end of the episode, leading to the terminal state. Their value is exactly Q(s, a) = r. The idea is to use these values as anchors, possibly with higher weight in the learning step, which the network can hold to.
+
 
 
 \section{Experiment}
