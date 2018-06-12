@@ -54,7 +54,6 @@ Andre Rodrigues Oliveira\thanks{Institute of Computing, University of Campinas, 
 \textit{TODO}
 
 \section{Reinforcement Learning}
-\label{sec:rl}
 
 % https://medium.freecodecamp.org/an-introduction-to-reinforcement-learning-4339519de419
 
@@ -186,35 +185,48 @@ To overcome that, a second network, called target network, can be used to provid
 
 \subsubsection{Double Learning}
 
-Due to the $\max$ term presented in both equations \ref{qlearning} and \ref{new_qlearning}, the approximation tends to overstimate the Q function value, which can severely impact on stability of the algorithm[ref]. A solution proposed by Hado van Hasselt (2010) [ref], called Double Learning, consists of two Q functions, $Q_1$ and $Q_2$, that are independently learned. One function is then used to determine the maximizing action and second to estimate its value. As we are already making use of two different networks, Hado van Hasselt's approach can be easily introduced to the update equation \ref{new_qlearning}. Its augmented version is as follows:
+Due to the $\max$ term presented in both equations \ref{qlearning} and \ref{new_qlearning}, the approximation tends to overstimate the Q function value, which can severely impact on stability of the algorithm [ref]. A solution proposed by Hado van Hasselt (2010) [ref], called Double Learning, consists of two Q functions, $Q_1$ and $Q_2$, that are independently learned. One function is then used to determine the maximizing action and second to estimate its value. As we are already making use of two different networks, Hado van Hasselt's approach can be easily introduced to the update equation \ref{new_qlearning}. Its augmented version is as follows:
 
 \begin{equation}
 	Q(s, a) \leftarrow Q(s, a) + \alpha [R_{t+1} + \gamma \widetilde{Q}(s', \argmax_{a'}{Q(s', a')}) - Q(s,a)]
 \end{equation}
 
 
-
-% \begin{equation}
-% 	% \underset{x}{\operatorname{argmax}} 
-% 	% \argmax 1
-% 	1
-
-
-% 	% Q(s, a) \leftarrow Q(s, a) + \alpha [R_{t+1} + \gamma \widetilde{Q}(s', a') - Q(s,a)]
-% \end{equation}
-
-
-
-
-% Utilizing known truth
-% Some values of the Q function are known exactly. These are those at the end of the episode, leading to the terminal state. Their value is exactly Q(s, a) = r. The idea is to use these values as anchors, possibly with higher weight in the learning step, which the network can hold to.
-
-
-
 \section{Experiment}
-\label{sec:exper}
 
 \subsection{Modeling}
+
+\subsubsection{State Representation}
+
+Three different state representations were considered. They are as follows.
+
+\begin{enumerate}
+	\item \textit{One-Hot Encoding}: Each number is treaded as a category. By doing so, each $P$ is mapped to a matrix $M$, where $m_{ij} = 1$ if $p_i = j$, and $0$ otherwise. 
+	\item \textit{Min-Max Normalization}: $P$ is mapped to an array $V$,\\ where $v_i = p_i / (|P| - 1)$.
+	\item \textit{Permutation Characterization}: $P$ is mapped to an array $V$ of $30$ features, where the features are the ones described in the work by Flavio (2017) [ref].
+\end{enumerate}
+
+\subsubsection{Proposed Architecture}
+
+\begin{center}
+ \begin{tabular}{|c c c c|} 
+	\hline
+	Layer & Number of Units & Activation & Type \\
+	\hline\hline
+	Input layer & - & - & - \\ 
+	\hline
+	Hidden layer 1 & 256 & ReLU & Fully-connected\\
+	\hline
+	Hidden layer 2 & 256 & ReLU & Fully-connected\\
+	\hline
+	Output layer & $|$Actions$|$ & Linear & Fully-connected \\
+	\hline
+\end{tabular}
+\end{center}
+
+\subsection{TD-Lambda}
+
+\subsection{Double Deep Q-Network (DDQN)}
 
 \textit{TODO}
 
