@@ -1004,7 +1004,7 @@ class FlaviosStateTransformer:
 	def transform(self, permutation):
 		permutation = list(permutation + 1)
 		features = self.generator.run(permutation)
-		return features / self.maximums
+		return np.atleast_2d(features / self.maximums)
 
 
 class MaxStateTransformer:

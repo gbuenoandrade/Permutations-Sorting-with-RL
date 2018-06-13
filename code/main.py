@@ -3,16 +3,16 @@ import numpy as np
 from ddqn import DDQNAgent
 from permutation_sorting import PermutationSorting
 from state_transformers import OneHotStateTransformer
-from util import greedy_reversal_sort, plot, plot_running_avg, EPS
+from util import greedy_reversal_sort, plot, plot_running_avg, EPS, PermutationExactSolver
 
 
-def compare_with_greedy(agent, its=100, plot_result=True, exploit_greedy_trace=False):
+def compare_agent_to_solver(agent, solver, its=100, solve_its=100, plot_result=True, exploit_greedy_trace=False):
 	scores = np.empty(its)
 	for i in range(its):
 		permutation = agent.env.observation_space.sample()
-		greedy = greedy_reversal_sort(permutation)
-		rl = agent.solve(permutation, exploit_greedy_trace=exploit_greedy_trace)
-		scores[i] = rl / (greedy + EPS)
+		base_result = solver(permutation)
+		rl = agent.solve(permutation, exploit_greedy_trace=exploit_greedy_trace, its=solve_its)
+		scores[i] = rl / (base_result + EPS)
 		print('It:', i, ' Ratio: %.3f' % scores[i])
 	if plot_result:
 		plot(scores)
@@ -23,21 +23,24 @@ def compare_with_greedy(agent, its=100, plot_result=True, exploit_greedy_trace=F
 
 
 def main():
-	n = 8
+	n = 10
 	env = PermutationSorting(n)
 	state_transformer = OneHotStateTransformer(n)
 	agent = DDQNAgent(env, state_transformer)
 
-	agent.parallel_pretrain(rows=10000)
+	# agent.parallel_pretrain(rows=20000)
 
 	# agent.load_pretrain_weights()
-	# agent.train_exploiting_greedy(episodes=200, plot_rewards=True)
-	# agent.load_final_weights()
+	# agent.epsilon = 0.01
+	#
+	# agent.train_exploiting_greedy(episodes=200, plot_rewards=True, max_steps=250)
+	# agent.train(episodes=3000, plot_rewards=True, max_steps=250)
 
-	# agent.train(episodes=200, plot_rewards=True)
+	agent.load_final_weights()
 
-
-	# compare_with_greedy(agent, plot_result=True, exploit_greedy_trace=True)
+	solver = greedy_reversal_sort
+	# solver = PermutationExactSolver(n).solve
+	compare_agent_to_solver(agent, solver, plot_result=False, exploit_greedy_trace=False, solve_its=50)
 
 
 if __name__ == '__main__':

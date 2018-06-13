@@ -1,4 +1,5 @@
 import threading
+from collections import deque
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -154,3 +155,29 @@ def eps2(i):
 
 def eps3(i):
 	return 1 * (0.9 ** i)
+
+
+class PermutationExactSolver:
+	def __init__(self, n):
+		cur = np.arange(n)
+		self._ans = {self._to_string(cur): 0}
+		q = deque()
+		q.append(cur)
+		while len(q) > 0:
+			cur = q.popleft()
+			d = self._ans[self._to_string(cur)]
+			for i in range(n - 1):
+				for j in range(i + 1, n):
+					reverse_subarray(cur, i, j)
+					cur_str = self._to_string(cur)
+					if cur_str not in self._ans:
+						self._ans[cur_str] = d + 1
+						q.append(cur.copy())
+					reverse_subarray(cur, i, j)
+
+	@staticmethod
+	def _to_string(a):
+		return np.array2string(a)
+
+	def solve(self, perm):
+		return self._ans[self._to_string(perm)]

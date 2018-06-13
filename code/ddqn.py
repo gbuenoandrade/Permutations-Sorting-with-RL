@@ -7,6 +7,7 @@ from keras.layers import Dense
 from keras.models import Sequential
 from keras.optimizers import Adam
 
+
 from util import v_upperbound, reverse_subarray, AtomicInteger, plot_running_avg, plot, \
 	greedy_reversal_sort
 
@@ -18,7 +19,7 @@ FINAL_WEIGHTS_PATH = './saved_models/final_weights.h5'
 # it uses Neural Network to approximate q function
 # and replay memory & target q network
 class DDQNAgent:
-	def __init__(self, env, state_transformer, initial_epsilon=0.2):
+	def __init__(self, env, state_transformer):
 		self.render = False
 		self.env = env
 		self.state_size = state_transformer.dimensions
@@ -28,9 +29,9 @@ class DDQNAgent:
 		# these is hyper parameters for the Double DQN
 		self.discount_factor = 0.99
 		self.learning_rate = 0.001
-		self.epsilon = initial_epsilon
+		self.epsilon = 0.2
 		self.epsilon_decay = 0.993
-		self.epsilon_min = 0.01
+		self.epsilon_min = 0.1
 		self.batch_size = 32
 		self.train_start = 1000
 		# create replay memory using deque
@@ -47,12 +48,11 @@ class DDQNAgent:
 	# state is input and Q Value of each action is output of network
 	def build_model(self):
 		model = Sequential()
-		model.add(Dense(48, input_dim=self.state_size, activation='relu', kernel_initializer='he_uniform'))
-		model.add(Dense(24, activation='relu', kernel_initializer='he_uniform'))
-		model.add(Dense(12, activation='relu', kernel_initializer='he_uniform'))
+		model.add(Dense(256, input_dim=self.state_size, activation='relu', kernel_initializer='he_uniform'))
+		model.add(Dense(256, activation='relu', kernel_initializer='he_uniform'))
 		model.add(Dense(self.action_size, activation='linear', kernel_initializer='he_uniform'))
 		model.summary()
-		model.compile(loss='mse', optimizer=Adam(lr=self.learning_rate))
+		model.compile(loss='logcosh', optimizer=Adam(lr=self.learning_rate))
 		return model
 
 	# after some time interval update the target model to be same with model
