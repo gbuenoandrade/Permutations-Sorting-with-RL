@@ -56,7 +56,11 @@ Andre Rodrigues Oliveira\thanks{Institute of Computing, University of Campinas, 
 
 \section{Introduction}
 
-\textit{TODO}
+Finding the minimum number of mutations necessary for one genome to transform into another using certain operations, a concept usually referred to as \textit{distance} between genomes, is a major problem in molecular biology. Two common operations are reversals and transpositions. A reversal happens when a fragment of the DNA filament gets reversed in the final replica, and a transposition when two fragments of DNA change places. 
+
+Formally, in this work we treat a genome of size $n$ as being equal to a permutation $p$ of integers from $0$ to $n$. Also, a reversal operation $f_r(i,j)$ applied to permutation $p = (p_0\ \ldots\ p_{i-1}\ p_{i}\ \ldots\ p_{j}\ \ldots\ p_{n-1})$ generates $p \cdot f_r(i,j) = (p_0\ \ldots\ p_{i-1}\ p_{j}\ \ldots\ p_{i}\ \ldots\ p_{n-1})$. Similarly, a transposition operation $f_t(i,j,k)$ applied to\\ $p = (p_0\ \ldots\ p_{i-1}\ p_{i}\ \ldots\ p_{j}\ p_{j+1}\ \ldots\ p_{k}\ p_{k+1}\ \ldots\ p_{n-1})$ generates\\ $p \cdot f_t(i,j,k) = (p_0\ \ldots\ p_{i-1}\ p_{j+1}\ \ldots\ p_{k}\ p_{i}\ \ldots\ p_{j}\ p_{k+1}\ \ldots\ p_{n-1})$. Finally, the distance $d(p, q)$ between permutations $p$ and $q$ is equal to the minimum number of operations needed to transform $p$ into $q$.
+
+It can be shown that finding $d(p, q)$ is equivalent to the problem of finding the distance between some permutation $\alpha$ and the identity permutation $\iota$ [ref]. Furthermore, Caprara (1999) proved that this problem is NP-Hard [ref]. That being so, this work proposes using Reinforcement Learning to come up with a heuristic for finding $d(p, \iota)$ for any arbitrary permutation $p$.
 
 \section{Reinforcement Learning}
 
@@ -286,7 +290,7 @@ Nevertheless, we tried a second different approach. An agent based on the TD-Lam
 Despite being finite, the state space is still enormous given that it is in $\mathcal{O}(|p|!)$. Being that the case, several techniques were tried so as to decrease training time. The ones that seemed more promising are mentioned below:
 
 \begin{itemize}
-	\item \textit{Greedy Pre-Training}: Fulano (1990) [ref] presented a 2-approximation for sorting a permutation using reversals, its output is represented below:
+	\item \textit{Greedy Pre-Training}: Kececioglu and Sankoff (1995) [ref] presented a 2-approximation for sorting a permutation using reversals, its output is represented below:
 
 	\begin{gather}\label{greedy}
 		d(p) = (p,\ a(p),\ a'(a(p)),\ \ldots,\ \iota)
