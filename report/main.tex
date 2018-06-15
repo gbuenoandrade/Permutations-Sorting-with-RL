@@ -7,6 +7,8 @@
 \usepackage{array}
 \usepackage{caption}
 \usepackage{float}
+\usepackage{hyperref}
+\usepackage{url}
 
 \DeclareMathOperator*{\E}{\mathbb{E}}
 \DeclareMathOperator*{\argmax}{\arg\!\max}
@@ -62,15 +64,13 @@ Finding the minimum number of mutations necessary for one genome to transform in
 
 Formally, in this work we treat a genome of size $n$ as being equal to a permutation $p$ of integers from $0$ to $n$. Also, a reversal operation $f_r(i,j)$ applied to permutation $p = (p_0\ \ldots\ p_{i-1}\ p_{i}\ \ldots\ p_{j}\ \ldots\ p_{n-1})$ generates $p \cdot f_r(i,j) = (p_0\ \ldots\ p_{i-1}\ p_{j}\ \ldots\ p_{i}\ \ldots\ p_{n-1})$. Similarly, a transposition operation $f_t(i,j,k)$ applied to\\ $p = (p_0\ \ldots\ p_{i-1}\ p_{i}\ \ldots\ p_{j}\ p_{j+1}\ \ldots\ p_{k}\ p_{k+1}\ \ldots\ p_{n-1})$ generates\\ $p \cdot f_t(i,j,k) = (p_0\ \ldots\ p_{i-1}\ p_{j+1}\ \ldots\ p_{k}\ p_{i}\ \ldots\ p_{j}\ p_{k+1}\ \ldots\ p_{n-1})$. Finally, the distance $d(p, q)$ between permutations $p$ and $q$ is equal to the minimum number of operations needed to transform $p$ into $q$.
 
-It can be shown that finding $d(p, q)$ is equivalent to the problem of finding the distance between some permutation $\alpha$ and the identity permutation $\iota$ [ref]. Furthermore, Caprara (1999) proved that this problem is NP-Hard [ref]. That being so, this work proposes using Reinforcement Learning to come up with a heuristic for finding $d(p, \iota)$ for any arbitrary permutation $p$.
+It can be shown that finding $d(p, q)$ is equivalent to the problem of finding the distance between some permutation $\alpha$ and the identity permutation $\iota$~\cite{flavio}. Furthermore, Caprara (1999) proved that this problem is NP-Hard~\cite{caprara1999sorting}. That being so, this work proposes using Reinforcement Learning to come up with a heuristic for finding $d(p, \iota)$ for any arbitrary permutation $p$.
 
 \section{Reinforcement Learning}
 
-% https://medium.freecodecamp.org/an-introduction-to-reinforcement-learning-4339519de419
-
 \subsection{Overview}
 
-Reinforcement Learning (RL), like other branches of Machine Learning, has been drawing a lot of attention from the community in the recent years. Google DeepMind's AlphaGo victory over Lee Sedol~\cite{googlelee} - world champion of the game Go, is one of many examples of recent astonishing applications of the technique. It is based an agent learning how to accomplish a certain goal based on interactions with the environment.
+Reinforcement Learning (RL), like other branches of Machine Learning, has been drawing a lot of attention from the community in recent years. Google DeepMind's AlphaGo victory over Lee Sedol~\cite{googlelee} - world champion of the game Go, is one out of many examples of recent astonishing applications of the technique. It is based on an agent learning how to accomplish a certain goal based on interactions with the environment.
 
 RL can be thought of as a sequence of episodes. Each of which consists of the agent initially at an initial state $S_0$. Then, based on a policy $\pi$, where a policy is a function that maps states to actions, it takes an action $a$, ending up at state $S_1$ and receiving some reward $R_1$. This process keeps going until the agent reaches a terminal state. Its goal is to find a function $\pi*$, known as optimal policy, that maximizes the cumulative discounted reward:
 
@@ -107,7 +107,7 @@ It tells the agent the expected future reward it will get at each state. $V_\pi$
 
 The previous definition is convenient because it allows the agent to pick the best action that can be performed from state $s$ by simply finding $\operatorname*{arg\,max}_{a} Q^\pi(s,a)$.
 
-Furthermore, $Q$ can be expressed in terms of itself. An expression known as the Bellman Equation [ref]:
+Furthermore, $Q$ can be expressed in terms of itself. An expression known as the Bellman Equation~\cite{sutton}:
 
 \begin{gather}\label{bellman}
 	Q^\pi(s, a) = \mathbb{E}_{\pi} [R_{t+1} + \gamma \sum_{a'} Q^\pi(s', a')]
@@ -119,17 +119,17 @@ Furthermore, $Q$ can be expressed in terms of itself. An expression known as the
 	\end{tabular}\nonumber
 \end{gather}
 
-The above form can be used alongside dynamic programming to develop iterative approaches to solve the problem [ref].
+The above form can be used alongside dynamic programming to develop iterative approaches to solve the problem~\cite{sutton}.
 
 \subsection{Function Approximation}
 
 If one can calculate the Q-table from equation \ref{qtable}, they could trivially come up with a great policy. At each state $s$, the agent should simply be greedy and select the action $a$ that maximizes $Q^\pi(s, a)$. As mentioned in the last section, finding the Q-table can be easily done with dynamic programming.
 
-However, as the number of states grows largers, dynamic programming and other iterative approaches become unfeasible due to our computers' memory and time limitations. Fortunately, it turns out that the Q-table can be approximated instead of having its exact values determined, and it will still produce great results [ref]. This work tries to achieve that using both linear regression and deep neural networks.
+However, as the number of states grows largers, dynamic programming and other iterative approaches become unfeasible due to our computers' memory and time limitations. Fortunately, it turns out that the Q-table can be approximated instead of having its exact values determined, and it will still produce great results~\cite{dp_approx}. This work tries to achieve that using both linear regression and deep neural networks.
 
 \subsection{Monte Carlo and Temporal Difference Learning}
 
-In Monte Carlo Approaches, the agent plays an entire episode, keeping track of the rewards received at each timestep so it can calculate the cumulative discounted reward. After that, it updates the value function for each visited stated based on the expression [ref]:
+In Monte Carlo Approaches, the agent plays an entire episode, keeping track of the rewards received at each timestep so it can calculate the cumulative discounted reward. After that, it updates the value function for each visited stated based on the expression~\cite{sutton}:
 
 \begin{gather}
 	V(S_t) \leftarrow V(S_t) + \alpha [G(t) - V(S_t)]
@@ -140,7 +140,7 @@ In Monte Carlo Approaches, the agent plays an entire episode, keeping track of t
 	\end{tabular}\nonumber
 \end{gather}
 
-Therefore, the agent only learns after an entire episode has been played. In Temporal Diference Learning, however, the value of $V$ is updated after each timestep. At time $t+1$, the observations made during time $t$ are already being considered. In its simplest form, the method is called TD(0) or 1-step TD, and its update equation is as follows:
+Therefore, the agent only learns after an entire episode has been played. In Temporal Diference Learning, on the other hand, the value of $V$ is updated after each timestep. At time $t+1$, the observations made during time $t$ are already being considered. In its simplest form, the method is called TD(0) or 1-step TD, and its update equation is as follows:
 
 \begin{equation} \label{td0}
 	V(S_t) \leftarrow V(S_t) + \alpha [R_{t+1} + \gamma V(S_{t+1}) - V(S_t)]
@@ -149,45 +149,38 @@ Therefore, the agent only learns after an entire episode has been played. In Tem
 The right-hand side of the previous equation is referred to as the TD(0) error.
 
 \subsection{TD-Lambda}
-% https://amreis.github.io/ml/reinf-learn/2017/11/02/reinforcement-learning-eligibility-traces.html
 
-TD(0) is biased as it relies on information from a single timestep to perform its updates. It does not take into account the fact that the action that caused a reward might have happened several timesteps earlier, which can lead to slow convergence [ref]. Monte Carlo methods, although not biased, have a lot of variance since they use the rewards of an entire episode in order to perform updates [ref].
+TD(0) is biased as it relies on information from a single timestep to perform its updates. It does not take into account the fact that the action that caused a reward might have happened several timesteps earlier, which can lead to slow convergence~\cite{tdlambda}. Monte Carlo methods, although not biased, have a lot of variance since they use the rewards of an entire episode in order to perform updates~\cite{tdlambda}.
 
-To address that, from equation \ref{td0}, we can define the 1-step return, $G_t^{(1)} = R_{t+1} + \gamma V(S_{t+1})$. We can extend the concept further to 2-step return, $G_t^{(2)} = R_{t+1} + \gamma R_{t+2} + \gamma^2 V(S_{t+2})$, and, generically, to, $G_t^{(n)} = R_{t+1} + \gamma R_{t+2} + \ldots + \gamma^n V(S_{t+n})$. 
+To overcome that, from equation \ref{td0}, we can define the 1-step return, $G_t^{(1)} = R_{t+1} + \gamma V(S_{t+1})$. We can extend the concept further to 2-step return, $G_t^{(2)} = R_{t+1} + \gamma R_{t+2} + \gamma^2 V(S_{t+2})$, and, generically, to, $G_t^{(n)} = R_{t+1} + \gamma R_{t+2} + \ldots + \gamma^n V(S_{t+n})$. 
 
-TD-Lambda methods use a mathematical trick to average all the possible n-step returns into a single one. This is done by introducing a factor $\lambda \in [0, 1]$ and weighting the nth-return with $\gamma^{n-1}$. It can be shown [ref] that when $\lambda = 0$, the method is equivalent to TD(0), and when $\lambda = 1$, equivalent to Monte Carlo. So, intuitively, by setting $0 < \lambda < 1$, we can get a mixture of both methods [ref].
+TD-Lambda methods use a mathematical trick to average all the possible n-step returns into a single one. This is done by introducing a factor $\lambda \in [0, 1]$ and weighting the nth-return with $\gamma^{n-1}$. It can be shown that when $\lambda = 0$, the method is equivalent to TD(0), and when $\lambda = 1$, equivalent to Monte Carlo~\cite{dp_approx}. So, intuitively, by setting $0 < \lambda < 1$, we can get a mixture of both methods.
 
 \subsection{Q-learning}
 
-Q-learning is another technique based on Temporal Difference Learning to learn the Q-table. The main difference between it and the previous shown techniques is that Q-learning is off-policy, while TD(0) and TD-Lambda are on-policy [ref]. This is reflected in its update equation, derived from the Bellman Equation [ref]:
+Q-learning is another technique based on Temporal Difference Learning to learn the Q-table. The main difference between it and the previous shown techniques is that Q-learning is off-policy, while TD(0) and TD-Lambda are on-policy~\cite{sutton}. This is reflected in its update equation, derived from the Bellman Equation~\cite{qlearning}:
 
 \begin{equation} \label{qlearning}
 	Q(s, a) \leftarrow Q(s, a) + \alpha [R_{t+1} + \gamma \max_{a'} Q(s', a') - Q(s,a)]
 \end{equation}
 
-The fact that there is no constraint regarding the action $a'$, only that it must optimizes $Q$, makes it an off-policy method [ref].
+The fact that there is no constraint acting upon action $a'$, only that it must optimizes $Q$, makes it an off-policy method~\cite{qlearning}.
 
 \subsubsection{Deep Q-learning}
 
-% https://storage.googleapis.com/deepmind-data/assets/papers/DeepMindNature14236Paper.pdf
-% https://arxiv.org/abs/1509.06461
-% https://jaromiru.com/2016/11/07/lets-make-a-dqn-double-learning-and-prioritized-experience-replay/
-% Watkins Ch. and Dayan P. – Q-learning, Machine Learning 8, 1992 q learning convergence\
-% https://jaromiru.com/2016/09/27/lets-make-a-dqn-theory/#fnref-38-6
-
-In order to approximate the Q-table to make using it feasible even when the number of states is very large, since Google AlphaGo's paper [ref], it has becoming common the use of a deep neural network. Even though standard Q-learning is proven to converge when there are finite states and each pair state-action is presented repeatedly [ref], the same proof does not hold when neural networks are being used to calculate $Q$. To face with this issue, this work makes use of several ideas found in the literature [ref] to stabilize the training. They are presented in the following subsections.
+In order to approximate the Q-table to make using it feasible even when the number of states is very large, since Google AlphaGo's paper~\cite{alphago}, it has become common the use of deep neural networks. Even though standard Q-learning is proven to converge when there are finite states and each pair state-action is presented repeatedly~\cite{convergence_qlearning}, the same proof does not hold when neural networks are being used to calculate $Q$. To face with this issue, this work makes use of several ideas found in the literature~\cite{replay} to stabilize the training. They are presented in the following subsections.
 
 \subsubsection{Experience Replay}\label{experience}
 
 During each step of an episode, our estimation can be shifted according to equation \ref{qlearning}. It is reasonable to think that as more truth is being introduced into the system, it will eventually converge; however, this is often not true. One of the reasons is that samples arrive in order they are experienced and as such are highly correlated. Also, by throwing away our samples immediately after we use it, we are not extracting all the knowledge they carry.
 
-Experience replay address that by storing samples into a queue and during each learning step, it samples a random batch and performs gradient descend on it. As samples get old, they are gradually discarded.
+Experience replay address that by storing samples into a queue, and, during each learning step, it samples a random batch and performs gradient descend on it. As samples get old, they are gradually discarded.
 
 \subsubsection{Target Network}
 
-The points $Q(s, a)$ and $Q(s', a')$ in equation \ref{qlearning} are very close together as $s'a$ is a state reachable from $s$. That being so, updates to one of them influence the other, which in turn can lead to instabilities.
+The points $Q(s, a)$ and $Q(s', a')$ in equation \ref{qlearning} are very close together as $s'$ is a state reachable from $s$. That being so, updates to one of them influence the other, which in turn can lead to instabilities.
 
-To overcome that, a second network, called target network, can be used to provide more stable $\widetilde{Q}$ values. This second network is a mery copy of the first one; however, it does not get updated every simulation step. Instead, it stays frozen in time, and only after several steps it is updated by copying the weights from the first network. The introduction of the target network changes our update equation to the following:
+To overcome that, a second network, called target network, can be used to provide more stable $\widetilde{Q}$ values. This second network is a mere copy of the first one; however, it does not get updated every simulation step. Instead, it stays frozen in time, and only after several steps it is updated by copying the weights from the first network. The introduction of the target network changes our update equation to the following:
 
 \begin{equation} \label{new_qlearning}
 	Q(s, a) \leftarrow Q(s, a) + \alpha [R_{t+1} + \gamma \max_{a'}\widetilde{Q}(s', a') - Q(s,a)]
@@ -196,7 +189,7 @@ To overcome that, a second network, called target network, can be used to provid
 
 \subsubsection{Double Learning}\label{double_learning}
 
-Due to the $\max$ term presented in both equations \ref{qlearning} and \ref{new_qlearning}, the approximation tends to overstimate the Q function value, which can severely impact on stability of the algorithm [ref]. A solution proposed by Hado van Hasselt (2010) [ref], called Double Learning, consists of two Q functions, $Q_1$ and $Q_2$, that are independently learned. One function is then used to determine the maximizing action and second to estimate its value. As we are already making use of two different networks, Hado van Hasselt's approach can be easily introduced to the update equation \ref{new_qlearning}. Its augmented version is as follows:
+Due to the $\max$ term presented in both equations \ref{qlearning} and \ref{new_qlearning}, the approximation tends to overstimate the Q function value, which can severely impact on stability of the algorithm~\cite{overestimation}. A solution proposed by Hado van Hasselt (2010)~\cite{doubleq2010}, called Double Learning, consists of using two Q functions, $Q_1$ and $Q_2$, that are independently learned. One function is then used to determine the maximizing action and second to estimate its value. As we are already making use of two different networks, Hado van Hasselt's approach can be easily introduced to the update equation \ref{new_qlearning}. Its augmented version is as follows:
 
 \begin{equation}\label{double_equation}
 	Q(s, a) \leftarrow Q(s, a) + \alpha [R_{t+1} + \gamma \widetilde{Q}(s', \argmax_{a'}{Q(s', a')}) - Q(s,a)]
@@ -214,7 +207,7 @@ Three different state representations were considered. They are as follows.
 \begin{itemize}
 	\item \textit{One-Hot Encoding}: Each number is treaded as a category. By doing so, each $p$ is mapped to a matrix $m$, where $m_{ij} = 1$ if $p_i = j$, and $0$ otherwise. 
 	\item \textit{Min-Max Normalization}: $P$ is mapped to an array $v$,\\ where $v_i = p_i / (|p| - 1)$.
-	\item \textit{Permutation Characterization}: $p$ is mapped to an array $v$ of $30$ features, where the features are the ones described in the work by Flavio (2017) [ref].
+	\item \textit{Permutation Characterization}: $p$ is mapped to an array $v$ of $30$ features, where the features are the ones described in the work by F. A. M. da Silva, A. R. Oliveira, and Z. Dias (2017)~\cite{flavio}.
 \end{itemize}
 
 \subsubsection{Proposed Architecture}
@@ -292,7 +285,7 @@ Nevertheless, we tried a second different approach. An agent based on the TD-Lam
 Despite being finite, the state space is still enormous given that it is in $\mathcal{O}(|p|!)$. Being that the case, several techniques were tried so as to decrease training time. The ones that seemed more promising are mentioned below:
 
 \begin{itemize}
-	\item \textit{Greedy Pre-Training}: Kececioglu and Sankoff (1995) [ref] presented a 2-approximation for sorting a permutation using reversals, its output is represented below:
+	\item \textit{Greedy Pre-Training}: Kececioglu and Sankoff (1995)~\cite{Kececioglu1995} presented a 2-approximation for sorting a permutation using reversals, its output is represented below:
 
 	\begin{gather}\label{greedy}
 		d(p) = (p,\ a(p),\ a'(a(p)),\ \ldots,\ \iota)
@@ -330,30 +323,29 @@ The models were trained experiencing $10000$ episodes, each of which had $s_0$ s
 
 Based on $\eta$, it was found that one-hot encoding state representation was slightly better than our other different attempts (see figure \ref{chart:state}). Nonetheless, investigating more effective representations so as to lead to better generalizations is a pending task. Also, as expected, our DDQN agent presented much better results than the ones presented by our simpler one based on TD-Lambda algorithm (see figure \ref{chart:alg}).
 
-\begin{figure}
+\begin{figure}[H]
 \centering
-\begin{minipage}{.5\textwidth}
+\begin{minipage}{.48\textwidth}
   \centering
 	\includegraphics[scale=0.5]{charts/states_comp.pdf}
-  \caption{Comparing different state represantions}
+  \caption{Different state representations}
   \label{chart:state}
 \end{minipage}%
-\begin{minipage}{.5\textwidth}
+\begin{minipage}{.48\textwidth}
   \centering
 \includegraphics[scale=0.5]{charts/lambda_ddqn.pdf}
-  \caption{Comparing different algorithms}
+  \caption{Different algorithms}
   \label{chart:alg}
 \end{minipage}
 \end{figure}
 
 Having defined the best RL architecture based on the results above, we ran it against Kececioglu and Sankoff (1995)'s greedy approach. Our model consistently outperformed theirs when $|p| < 15$ (see figure \ref{chart:rl_greedy}). However, converging starts getting tricky and time-consuming as $|p|$ gets bigger. So, it is still early to define our approach as being \textit{practical}. 
 
-\begin{figure}
+\begin{figure}[H]
 	\begin{center}
 		\includegraphics[scale=0.8]{charts/rl_greedy_comp.pdf}
 		\caption{RL vs. Kececioglu and Sankoff's greedy approach}
 		\label{chart:rl_greedy}
-
 	\end{center}
 \end{figure}
 

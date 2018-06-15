@@ -1,38 +1,163 @@
-@MISC{googlelee,
-	HOWPUBLISHED = "https://www.theguardian.com/technology/2016/mar/15/googles-alphago-seals-4-1-victory-over-grandmaster-lee-sedol",
-	AUTHOR = "The Guardian",
-	TITLE = "AlphaGo seals 4\-1 victory over Go grandmaster Lee Sedol",
-	YEAR = "2016",
-	NOTE = "accessed June 05, 2018"
+@techreport{flavio,
+   number = {IC-PFG-17-03},
+   author  = {Flavio {Altinier} Maximiano da Silva and Andre Rodrigues
+                   {Oliveira} and Zanoni {Dias}},
+   title  =  {{Machine  Learning  Applied  to  Sorting Permutations by
+                   Reversals and Transpositions}},
+   month = {July},
+   year = {2017},
+   institution = {Institute of Computing, University of Campinas}
+  }
+}
+
+@article{caprara1999sorting,
+  title={Sorting permutations by reversals and Eulerian cycle decompositions},
+  author={Caprara, Alberto},
+  journal={SIAM Journal on Discrete Mathematics},
+  volume={12},
+  number={1},
+  pages={91--110},
+  year={1999},
+  publisher={SIAM}
+}
+
+@misc{googlelee,
+	author = "Steven Borowiec",
+	title = "{{AlphaGo seals 4-1 victory over Go grandmaster Lee Sedol}}",
+	year = "2016",
+	howpublished = "\url{https://www.theguardian.com/technology/2016/mar/15/googles-alphago-seals-4-1-victory-over-grandmaster-lee-sedol}",
+	note = "[Online; accessed 15-June-2018]"
+}
+
+@book{sutton,
+  Author = {Richard S. Sutton and Andrew G. Barto},
+  Title = {Reinforcement Learning: An Introduction (Adaptive Computation and Machine Learning)},
+  Publisher = {A Bradford Book},
+  Year = {1998},
+  ISBN = {0262193981},
+  URL = {https://www.amazon.com/Reinforcement-Learning-Introduction-Adaptive-Computation/dp/0262193981?SubscriptionId=0JYN1NVW651KCA56C102&tag=techkie-20&linkCode=xm2&camp=2025&creative=165953&creativeASIN=0262193981}
+}
+
+@book{dp_approx,
+  Author = {Lucian Busoniu and Robert Babuska and Bart De Schutter and Damien Ernst},
+  Title = {Reinforcement Learning and Dynamic Programming Using Function Approximators (Automation and Control Engineering)},
+  Publisher = {CRC Press},
+  Year = {2010},
+  ISBN = {1439821089},
+  URL = {https://www.amazon.com/Reinforcement-Programming-Approximators-Automation-Engineering/dp/1439821089?SubscriptionId=0JYN1NVW651KCA56C102&tag=techkie-20&linkCode=xm2&camp=2025&creative=165953&creativeASIN=1439821089}
+}
+
+@misc{tdlambda,
+	author = "Alister Reis",
+	title = "{{Reinforcement Learning: Eligibility Traces and TD(lambda)}}",
+	year = "2017",
+	howpublished = "\url{https://amreis.github.io/ml/reinf-learn/2017/11/02/reinforcement-learning-eligibility-traces.html}",
+	note = "[Online; accessed 15-June-2018]"
+}
+
+@INPROCEEDINGS{qlearning,
+    author = {Christopher J. C. H. Watkins and Peter Dayan},
+    title = {Q-learning},
+    booktitle = {Machine Learning},
+    year = {1992},
+    pages = {279--292}
 }
 
 
-@BOOK{ex1,
-	AUTHOR="John Doe",
-	TITLE="The Book without Title",
-	PUBLISHER="Dummy Publisher",
-	YEAR="2100",
+@article{alphago,
+  author = {Silver, David and Schrittwieser, Julian and Simonyan, Karen and Antonoglou, Ioannis and Huang, Aja and Guez, Arthur and Hubert, Thomas and Baker, Lucas and Lai, Matthew and Bolton, Adrian and Chen, Yutian and Lillicrap, Timothy and Hui, Fan and Sifre, Laurent and van den Driessche, George and Graepel, Thore and Hassabis, Demis},
+  biburl = {https://www.bibsonomy.org/bibtex/2ecdfbfcceb55ee5f14c1c375ad71f2cb/achakraborty},
+  description = {Mastering the game of Go without human knowledge | Nature},
+  interhash = {c45d318e105d0f2d62ccc28c2699d9d4},
+  intrahash = {ecdfbfcceb55ee5f14c1c375ad71f2cb},
+  journal = {Nature},
+  keywords = {2017 deep-learning deepmind google paper reinforcement-learning},
+  month = oct,
+  pages = {354--},
+  publisher = {Macmillan Publishers Limited, part of Springer Nature. All rights reserved.},
+  timestamp = {2017-12-15T02:14:58.000+0100},
+  title = {Mastering the game of Go without human knowledge},
+  url = {http://dx.doi.org/10.1038/nature24270},
+  volume = 550,
+  year = 2017
 }
 
-@ARTICLE{ex2,
-	AUTHOR="John Doe",
-	TITLE="Title",
-	JOURNAL="Journal",
-	YEAR="2017",
+@article{convergence_qlearning,
+ author = {Watkins, Christopher J. C. H. and Dayan, Peter},
+ title = {Technical Note:  \cal Q-Learning},
+ journal = {Mach. Learn.},
+ issue_date = {May 1992},
+ volume = {8},
+ number = {3-4},
+ month = may,
+ year = {1992},
+ issn = {0885-6125},
+ pages = {279--292},
+ numpages = {14},
+ url = {https://doi.org/10.1007/BF00992698},
+ doi = {10.1007/BF00992698},
+ acmid = {139618},
+ publisher = {Kluwer Academic Publishers},
+ address = {Hingham, MA, USA},
+ keywords = {\cal Q-learning, asynchronous dynamic programming, reinforcement learning, temporal differences},
+} 
+
+@article{replay,
+  author    = {Hado van Hasselt and
+               Arthur Guez and
+               David Silver},
+  title     = {Deep Reinforcement Learning with Double Q-learning},
+  journal   = {CoRR},
+  volume    = {abs/1509.06461},
+  year      = {2015},
+  url       = {http://arxiv.org/abs/1509.06461},
+  archivePrefix = {arXiv},
+  eprint    = {1509.06461},
+  timestamp = {Wed, 07 Jun 2017 14:40:43 +0200},
+  biburl    = {https://dblp.org/rec/bib/journals/corr/HasseltGS15},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
 }
 
-@INBOOK{ex3,
-	AUTHOR="John Doe",
-	TITLE="The Book without Title",
-	PUBLISHER="Dummy Publisher",
-	YEAR="2100",
-	PAGES="100-200",
+@incollection{doubleq2010,
+title = {Double Q-learning},
+author = {Hado V. Hasselt},
+booktitle = {Advances in Neural Information Processing Systems 23},
+editor = {J. D. Lafferty and C. K. I. Williams and J. Shawe-Taylor and R. S. Zemel and A. Culotta},
+pages = {2613--2621},
+year = {2010},
+publisher = {Curran Associates, Inc.},
+url = {http://papers.nips.cc/paper/3964-double-q-learning.pdf}
 }
 
-@MISC{ex4,
-	HOWPUBLISHED = "http://example.com",
-	AUTHOR = "R. Team",
-	TITLE = "Example",
-	YEAR = "2017",
-	NOTE = "accessed July 05, 2017"
+@article{overestimation,
+  author    = {Oron Anschel and
+               Nir Baram and
+               Nahum Shimkin},
+  title     = {Deep Reinforcement Learning with Averaged Target {DQN}},
+  journal   = {CoRR},
+  volume    = {abs/1611.01929},
+  year      = {2016},
+  url       = {http://arxiv.org/abs/1611.01929},
+  archivePrefix = {arXiv},
+  eprint    = {1611.01929},
+  timestamp = {Wed, 07 Jun 2017 14:41:19 +0200},
+  biburl    = {https://dblp.org/rec/bib/journals/corr/AnschelBS16},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@Article{Kececioglu1995,
+	author="Kececioglu, J.
+	and Sankoff, D.",
+	title="Exact and approximation algorithms for sorting by reversals, with application to genome rearrangement",
+	journal="Algorithmica",
+	year="1995",
+	month="Feb",
+	day="01",
+	volume="13",
+	number="1",
+	pages="180",
+	abstract="Motivated by the problem in computational biology of reconstructing the series of chromosome inversions by which one organism evolved from another, we consider the problem of computing the shortest series of reversals that transform one permutation to another. The permutations describe the order of genes on corresponding chromosomes, and areversal takes an arbitrary substring of elements, and reverses their order.",
+	issn="1432-0541",
+	doi="10.1007/BF01188586",
+	url="https://doi.org/10.1007/BF01188586"
 }
