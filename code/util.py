@@ -217,12 +217,17 @@ def from_file(path):
 		return None
 
 
-def plot_dashed(xs, ys, labels):
+def plot_dashed(xs, ys, labels=None, xlabel='', ylabel='', file='chart'):
 	if not isinstance(xs, collections.Iterable):
 		xs = [xs]
 		ys = [ys]
+	if labels is None:
+		labels = [None] * len(xs)
 	for x, y, label in zip(xs, ys, labels):
-		# plt.plot(x, y, '-')
-		plt.plot(x, get_running_avg(y, dist=50), label=label)
+		plt.plot(x, get_running_avg(y, dist=60), label=label)
+	plt.xlabel(xlabel)
+	plt.ylabel(ylabel)
 	plt.legend()
+	file = 'saved_models/' + file + '.eps'
+	plt.savefig(file, format='eps', dpi=1000)
 	plt.show()

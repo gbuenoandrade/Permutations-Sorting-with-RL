@@ -251,7 +251,8 @@ class DDQNAgent:
 				if ans is None or last_ans > ans:
 					ans = last_ans
 			else:
-				pans = self.run_episode(max_steps=max_steps, forced=permutation)
+				pans = self.run_episode(
+					max_steps=max_steps, forced=permutation, update_model=update_model, update_eps=update_eps)
 				if ans is None or pans > ans:
 					ans = pans
 		return -ans
