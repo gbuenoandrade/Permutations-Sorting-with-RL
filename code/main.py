@@ -2,10 +2,9 @@ import numpy as np
 
 from ddqn import DDQNAgent
 from permutation_sorting import PermutationSorting
-from state_transformers import OneHotStateTransformer, MaxStateTransformer, FlaviosStateTransformer, RBFStateTransformer
-from td_lambda import TDLambdaAgent
+from state_transformers import OneHotStateTransformer
 from util import plot, plot_running_avg, EPS, to_file, from_file, \
-	plot_dashed, PermutationExactSolver, greedy_reversal_sort, Eps1
+	plot_dashed
 
 
 def compare_agent_to_solver(agent, solver, its=100, solve_its=100, plot_result=True, exploit_greedy_trace=False):
@@ -104,45 +103,18 @@ def plot_type3():
 		xs, (ylambda, ydnr), ('TD-Lambda', 'DDQN'),
 		xlabel='episodes', ylabel='performance ratio', file='lambda_ddqn')
 
+
 def main():
-	n = 6
-
-	# generate_fixed(100, n=n)
-
-	#
-	# env = PermutationSorting(n)
-	# st = RBFStateTransformer(env, MaxStateTransformer(n))
-	# agent = TDLambdaAgent(env, st)
-	# agent.train(500, Eps1().eps, False)
-	# save_ans(agent.solve, 'tdlambda')
-
-
-
-	# plot_type2()
-
-
-	# solver = PermutationExactSolver(n)
-	# save_ans(solver.solve, 'exact')
-
-	plot_type3()
-
-	# solver = greedy_reversal_sort
-	# save_ans(solver, 'greedy')
-
-	# compare(('maxstate', 'onehot', 'flaviostate'))
-	# compare(('rl_0.05', 'rl_0.1', 'rl_0.2', 'rl_0.3', 'rl_0.4', 'rl_0.5'))
-
-	# env = PermutationSorting(n)
-	# state_transformer = OneHotStateTransformer(n)
-	# agent = DDQNAgent(env, state_transformer)
-	# agent.parallel_pretrain(1000)
-	# # agent.load_pretrain_weights()
-	# agent.train(max_steps=200)
-	#
-	# # agent.load_final_weights()
-	# agent.epsilon = 0.2
-	# save_ans(lambda perm: agent.solve(
-	# 	perm, 100, 30, update_eps=False, update_model=False), label='dnr')
+	n = 10
+	env = PermutationSorting(n)
+	state_transformer = OneHotStateTransformer(n)
+	agent = DDQNAgent(env, state_transformer)
+	agent.parallel_pretrain(1000)
+	# agent.load_pretrain_weights()
+	agent.train(max_steps=200)
+	# agent.load_final_weights()
+	p = np.random.permutation(n)
+	ans = agent.solve(p)
 
 
 if __name__ == '__main__':

@@ -1,7 +1,7 @@
+import collections
 import json
 import threading
 from collections import deque
-import collections
 
 import matplotlib.pyplot as plt
 import numpy as np
