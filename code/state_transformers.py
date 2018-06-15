@@ -1021,7 +1021,8 @@ class IdentityStateTransformer:
 		self._n = n
 		self.dimensions = n
 
-	def transform(self, permutation):
+	@staticmethod
+	def transform(permutation):
 		return permutation
 
 

@@ -148,7 +148,7 @@ def v_upperbound(state, gamma):
 
 class Eps1:
 	def __init__(self):
-		self._eps = 0.5
+		self._eps = 1
 		self._min = 0.005
 		self._decay = 0.99
 

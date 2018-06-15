@@ -2,9 +2,10 @@ import numpy as np
 
 from ddqn import DDQNAgent
 from permutation_sorting import PermutationSorting
-from state_transformers import OneHotStateTransformer
+from state_transformers import OneHotStateTransformer, MaxStateTransformer, FlaviosStateTransformer, RBFStateTransformer
+from td_lambda import TDLambdaAgent
 from util import plot, plot_running_avg, EPS, to_file, from_file, \
-	plot_dashed, PermutationExactSolver, greedy_reversal_sort
+	plot_dashed, PermutationExactSolver, greedy_reversal_sort, Eps1
 
 
 def compare_agent_to_solver(agent, solver, its=100, solve_its=100, plot_result=True, exploit_greedy_trace=False):
@@ -32,7 +33,7 @@ def generate_fixed(m, n=10):
 
 def save_ans(solve, label):
 	fixed = from_file('fixed')
-	fixed = fixed[100:200]
+	fixed = fixed[:100]
 	ans = []
 	for i, perm in enumerate(fixed):
 		perm = np.array(perm)
@@ -44,7 +45,8 @@ def save_ans(solve, label):
 
 def compare(labels):
 	fixed = from_file('fixed')
-	xs = [range(len(fixed))] * 3
+	# fixed = fixed[:100]
+	xs = [range(len(fixed))] * len(labels)
 	ys = []
 	for label in labels:
 		y = from_file(label + '_ans')
@@ -52,27 +54,95 @@ def compare(labels):
 	plot_dashed(xs, ys, labels)
 
 
-def main():
-	n = 10
+def plot_type1():
+	ygreedy = np.array(from_file('greedy' + '_ans'))
+	yrl = np.array(from_file('rl' + '_ans'))
+	yexact = np.array(from_file('exact' + '_ans'))
+	ygreedy = ygreedy / yexact
+	yrl = yrl / yexact
 
-	# generate_fixed(1000)
+	print(ygreedy.mean())
+	print(yrl.mean())
+
+	xs = [range(len(yrl))] * 2
+	plot_dashed(
+		xs, (ygreedy, yrl), ('Kececioglu and Sankoff (1995)', 'RL'),
+		xlabel='episodes', ylabel='performance ratio', file='rlandgreedy_vs_exact2')
+
+
+def plot_type2():
+	flavio = np.array(from_file('flaviostate' + '_ans'))
+	onehot = np.array(from_file('onehot' + '_ans'))
+	maxstate = np.array(from_file('maxstate' + '_ans'))
+	exact = np.array(from_file('exact' + '_ans'))
+
+	flavio = flavio / exact
+	onehot = onehot / exact
+	maxstate = maxstate / exact
+
+	xs = [range(len(flavio))] * 3
+	plot_dashed(
+		xs, (flavio, onehot, maxstate), ('Permutation Characterization', 'One-Hot Encoding', 'Min-Max Normalization'),
+		xlabel='episodes', ylabel='performance ratio', file='states_comp')
+
+
+def plot_type3():
+	ylambda = np.array(from_file('tdlambda' + '_ans'))
+	ydnr = np.array(from_file('dnr' + '_ans'))
+	yexact = np.array(from_file('exact' + '_ans'))
+
+	for i in range(len(yexact)):
+		if abs(yexact[i]) < EPS:
+			ylambda[i] = 1
+			ydnr[i] = 1
+		else:
+			ylambda[i] = ylambda[i] / yexact[i]
+			ydnr[i] = ydnr[i] / yexact[i]
+
+	xs = [range(len(yexact))] * 2
+	plot_dashed(
+		xs, (ylambda, ydnr), ('TD-Lambda', 'DDQN'),
+		xlabel='episodes', ylabel='performance ratio', file='lambda_ddqn')
+
+def main():
+	n = 6
+
+	# generate_fixed(100, n=n)
+
+	#
+	# env = PermutationSorting(n)
+	# st = RBFStateTransformer(env, MaxStateTransformer(n))
+	# agent = TDLambdaAgent(env, st)
+	# agent.train(500, Eps1().eps, False)
+	# save_ans(agent.solve, 'tdlambda')
+
+
+
+	# plot_type2()
+
 
 	# solver = PermutationExactSolver(n)
 	# save_ans(solver.solve, 'exact')
 
+	plot_type3()
+
 	# solver = greedy_reversal_sort
 	# save_ans(solver, 'greedy')
 
-	compare(('greedy', 'exact', 'rl'))
-	# compare(('rl_0.05', 'rl_0.1', 'rl_0.2'))
+	# compare(('maxstate', 'onehot', 'flaviostate'))
+	# compare(('rl_0.05', 'rl_0.1', 'rl_0.2', 'rl_0.3', 'rl_0.4', 'rl_0.5'))
 
 	# env = PermutationSorting(n)
 	# state_transformer = OneHotStateTransformer(n)
 	# agent = DDQNAgent(env, state_transformer)
-	# agent.load_final_weights()
-	# agent.epsilon = 0.1
+	# agent.parallel_pretrain(1000)
+	# # agent.load_pretrain_weights()
+	# agent.train(max_steps=200)
+	#
+	# # agent.load_final_weights()
+	# agent.epsilon = 0.2
 	# save_ans(lambda perm: agent.solve(
-	# 	perm, 100, 30, update_eps=False, update_model=False), label='rl_test')
+	# 	perm, 100, 30, update_eps=False, update_model=False), label='dnr')
 
 
 if __name__ == '__main__':

@@ -1,6 +1,8 @@
 import numpy as np
 
-from util import plot_running_avg, plot, v_upperbound, reverse_subarray
+from permutation_sorting import PermutationSorting
+from state_transformers import RBFStateTransformer, MaxStateTransformer
+from util import plot_running_avg, plot, v_upperbound, reverse_subarray, Eps1
 
 
 # noinspection PyPep8Naming
@@ -114,11 +116,35 @@ class TDLambdaAgent:
 				G = -1 + self.gamma * next_bound
 				self.model.update(state, a, G, self.gamma, self.lambda_)
 
-	def play(self, eps=0.01, max_it=10000):
-		observation = self.env.reset()
+	def play(self, eps=0.01, max_it=10000, forced=None):
+		observation = self.env.reset(forced=forced)
 		done = False
+		ans = 0
 		while not done and max_it > 0:
-			self.env.render()
 			action = self.model.sample_action(observation, eps)
 			observation, _, done, _ = self.env.step(action)
 			max_it -= 1
+			ans += 1
+		return ans
+
+	def solve(self, permutation, eps=0.2, its=100, max_steps=30):
+		ans = None
+		for _ in range(its):
+			pans = self.play(eps=eps, max_it=max_steps, forced=permutation)
+			if ans is None or pans < ans:
+				ans = pans
+		return ans
+
+
+def main():
+	n = 5
+	env = PermutationSorting(n)
+	st = RBFStateTransformer(env, MaxStateTransformer(n))
+	agent = TDLambdaAgent(env, st)
+	agent.train(500, Eps1().eps, True)
+	print(agent.solve([0, 4, 3, 1, 2]))
+
+
+if __name__ == '__main__':
+	main()
+

@@ -211,7 +211,7 @@ Three different state representations were considered. They are as follows.
 
 \begin{itemize}
 	\item \textit{One-Hot Encoding}: Each number is treaded as a category. By doing so, each $p$ is mapped to a matrix $m$, where $m_{ij} = 1$ if $p_i = j$, and $0$ otherwise. 
-	\item \textit{Min-Max Normalization}: $P$ is mapped to an array $V$,\\ where $v_i = p_i / (|p| - 1)$.
+	\item \textit{Min-Max Normalization}: $P$ is mapped to an array $v$,\\ where $v_i = p_i / (|p| - 1)$.
 	\item \textit{Permutation Characterization}: $p$ is mapped to an array $v$ of $30$ features, where the features are the ones described in the work by Flavio (2017) [ref].
 \end{itemize}
 
@@ -327,7 +327,9 @@ Despite being finite, the state space is still enormous given that it is in $\ma
 greedy = 1.068
 RL = 1.041
 
-\textit{TODO}
+\includegraphics{charts/states_comp.pdf}
+\includegraphics{charts/lambda_ddqn.pdf}
+\includegraphics{charts/rl_greedy_comp.pdf}
 
 \bibliographystyle{abbrv}
 \bibliography{main}
