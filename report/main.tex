@@ -51,7 +51,9 @@ Andre Rodrigues Oliveira\thanks{Institute of Computing, University of Campinas, 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \begin{abstract} 
-\textit{TODO}
+
+Finding the minimum number of mutations necessary for one genome to transform into another is a major problem in molecular biology. This problem can be reduced to sorting a permutation using certain operations, where, in this work, the operations considered are reversals and transpositions. We present two different approaches using reinforcement learning to address that. Our results show that this approach is competitive when the permutations are small. However, converging gets trickier as $|p|$ grows larger.
+
 \end{abstract}
 
 \section{Introduction}
@@ -324,12 +326,36 @@ Despite being finite, the state space is still enormous given that it is in $\ma
 
 \subsection{Results and Discussion}
 
-greedy = 1.068
-RL = 1.041
+The models were trained experiencing $10000$ episodes, each of which had $s_0$ set to a random permutation. After that, in order for the models to effectively sort a permutation $p$, the exploration rate $\epsilon$ was kept constant and equal to $0.2$, and then the models were run for another $100$ episodes, where $s_0$ was always equal to $p$. The best score among those simulations was considered the model's answer $\hat{d}(p, \iota)$. Finally, the performance ratio $\eta = \hat{d}(p, \iota) / d(p, \iota)$ was used to compare different configurations. The closer $\eta$ was to $1$, the better.
 
-\includegraphics{charts/states_comp.pdf}
-\includegraphics{charts/lambda_ddqn.pdf}
-\includegraphics{charts/rl_greedy_comp.pdf}
+Based on $\eta$, it was found that one-hot encoding state representation was slightly better than our other different attempts (see figure \ref{chart:state}). Nonetheless, investigating more effective representations so as to lead to better generalizations is a pending task. Also, as expected, our DDQN agent presented much better results than the ones presented by our simpler one based on TD-Lambda algorithm (see figure \ref{chart:alg}).
+
+\begin{figure}
+\centering
+\begin{minipage}{.5\textwidth}
+  \centering
+	\includegraphics[scale=0.5]{charts/states_comp.pdf}
+  \caption{Comparing different state represantions}
+  \label{chart:state}
+\end{minipage}%
+\begin{minipage}{.5\textwidth}
+  \centering
+\includegraphics[scale=0.5]{charts/lambda_ddqn.pdf}
+  \caption{Comparing different algorithms}
+  \label{chart:alg}
+\end{minipage}
+\end{figure}
+
+Having defined the best RL architecture based on the results above, we ran it against Kececioglu and Sankoff (1995)'s greedy approach. Our model consistently outperformed theirs when $|p| < 15$ (see figure \ref{chart:rl_greedy}). However, converging starts getting tricky and time-consuming as $|p|$ gets bigger. So, it is still early to define our approach as being \textit{practical}. 
+
+\begin{figure}
+	\begin{center}
+		\includegraphics[scale=0.8]{charts/rl_greedy_comp.pdf}
+		\caption{RL vs. Kececioglu and Sankoff's greedy approach}
+		\label{chart:rl_greedy}
+
+	\end{center}
+\end{figure}
 
 \bibliographystyle{abbrv}
 \bibliography{main}
