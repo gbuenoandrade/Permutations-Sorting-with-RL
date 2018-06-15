@@ -3,7 +3,8 @@ import numpy as np
 from ddqn import DDQNAgent
 from permutation_sorting import PermutationSorting
 from state_transformers import OneHotStateTransformer
-from util import greedy_reversal_sort, plot, plot_running_avg, EPS, PermutationExactSolver
+from util import plot, plot_running_avg, EPS, to_file, from_file, \
+	plot_dashed, PermutationExactSolver, greedy_reversal_sort
 
 
 def compare_agent_to_solver(agent, solver, its=100, solve_its=100, plot_result=True, exploit_greedy_trace=False):
@@ -22,25 +23,56 @@ def compare_agent_to_solver(agent, solver, its=100, solve_its=100, plot_result=T
 	return scores_mean
 
 
+def generate_fixed(m, n=10):
+	fixed = []
+	for i in range(m):
+		fixed.append(list(np.random.permutation(n)))
+	to_file('fixed', fixed)
+
+
+def save_ans(solve, label):
+	fixed = from_file('fixed')
+	fixed = fixed[100:200]
+	ans = []
+	for i, perm in enumerate(fixed):
+		perm = np.array(perm)
+		if i % 10 == 0:
+			print('%.2f %%' % (i / len(fixed) * 100))
+		ans.append(solve(perm))
+	to_file('%s_ans' % label, ans)
+
+
+def compare(labels):
+	fixed = from_file('fixed')
+	xs = [range(len(fixed))] * 3
+	ys = []
+	for label in labels:
+		y = from_file(label + '_ans')
+		ys.append(y)
+	plot_dashed(xs, ys, labels)
+
+
 def main():
 	n = 10
-	env = PermutationSorting(n)
-	state_transformer = OneHotStateTransformer(n)
-	agent = DDQNAgent(env, state_transformer)
 
-	# agent.parallel_pretrain(rows=20000)
+	# generate_fixed(1000)
 
-	# agent.load_pretrain_weights()
-	# agent.epsilon = 0.01
-	#
-	# agent.train_exploiting_greedy(episodes=200, plot_rewards=True, max_steps=250)
-	# agent.train(episodes=3000, plot_rewards=True, max_steps=250)
+	# solver = PermutationExactSolver(n)
+	# save_ans(solver.solve, 'exact')
 
-	agent.load_final_weights()
+	# solver = greedy_reversal_sort
+	# save_ans(solver, 'greedy')
 
-	solver = greedy_reversal_sort
-	# solver = PermutationExactSolver(n).solve
-	compare_agent_to_solver(agent, solver, plot_result=False, exploit_greedy_trace=False, solve_its=50)
+	compare(('greedy', 'exact', 'rl'))
+	# compare(('rl_0.05', 'rl_0.1', 'rl_0.2'))
+
+	# env = PermutationSorting(n)
+	# state_transformer = OneHotStateTransformer(n)
+	# agent = DDQNAgent(env, state_transformer)
+	# agent.load_final_weights()
+	# agent.epsilon = 0.1
+	# save_ans(lambda perm: agent.solve(
+	# 	perm, 100, 30, update_eps=False, update_model=False), label='rl_test')
 
 
 if __name__ == '__main__':

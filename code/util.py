@@ -1,5 +1,7 @@
+import json
 import threading
 from collections import deque
+import collections
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -30,11 +32,12 @@ class AtomicInteger:
 		return self._value
 
 
-def get_running_avg(x):
+def get_running_avg(x, dist=100):
+	x = np.array(x)
 	n = len(x)
 	running_avg = np.empty(n)
 	for t in range(n):
-		running_avg[t] = x[max(0, t - 100):(t + 1)].mean()
+		running_avg[t] = x[max(0, t - dist):(t + 1)].mean()
 	return running_avg
 
 
@@ -47,6 +50,12 @@ def plot_running_avg(x, title='Running Average'):
 
 def plot(x, title=''):
 	plt.plot(x)
+	plt.title(title)
+	plt.show()
+
+
+def plot_xy(x, y, title=''):
+	plt.plot(x, y)
 	plt.title(title)
 	plt.show()
 
@@ -159,21 +168,25 @@ def eps3(i):
 
 class PermutationExactSolver:
 	def __init__(self, n):
-		cur = np.arange(n)
-		self._ans = {self._to_string(cur): 0}
-		q = deque()
-		q.append(cur)
-		while len(q) > 0:
-			cur = q.popleft()
-			d = self._ans[self._to_string(cur)]
-			for i in range(n - 1):
-				for j in range(i + 1, n):
-					reverse_subarray(cur, i, j)
-					cur_str = self._to_string(cur)
-					if cur_str not in self._ans:
-						self._ans[cur_str] = d + 1
-						q.append(cur.copy())
-					reverse_subarray(cur, i, j)
+		path = 'exact_%d' % n
+		self._ans = from_file(path)
+		if self._ans is None:
+			cur = np.arange(n)
+			self._ans = {self._to_string(cur): 0}
+			q = deque()
+			q.append(cur)
+			while len(q) > 0:
+				cur = q.popleft()
+				d = self._ans[self._to_string(cur)]
+				for i in range(n - 1):
+					for j in range(i + 1, n):
+						reverse_subarray(cur, i, j)
+						cur_str = self._to_string(cur)
+						if cur_str not in self._ans:
+							self._ans[cur_str] = d + 1
+							q.append(cur.copy())
+						reverse_subarray(cur, i, j)
+			to_file(path, self._ans)
 
 	@staticmethod
 	def _to_string(a):
@@ -181,3 +194,35 @@ class PermutationExactSolver:
 
 	def solve(self, perm):
 		return self._ans[self._to_string(perm)]
+
+
+def default(o):
+	if isinstance(o, np.int64):
+		return int(o)
+	raise TypeError
+
+
+def to_file(path, entry):
+	path = 'saved_models/' + path + '.json'
+	with open(path, 'w') as f:
+		f.write(json.dumps(entry, default=default))
+
+
+def from_file(path):
+	path = 'saved_models/' + path + '.json'
+	try:
+		with open(path, 'r') as f:
+			return json.loads(f.read())
+	except IOError:
+		return None
+
+
+def plot_dashed(xs, ys, labels):
+	if not isinstance(xs, collections.Iterable):
+		xs = [xs]
+		ys = [ys]
+	for x, y, label in zip(xs, ys, labels):
+		# plt.plot(x, y, '-')
+		plt.plot(x, get_running_avg(y, dist=50), label=label)
+	plt.legend()
+	plt.show()

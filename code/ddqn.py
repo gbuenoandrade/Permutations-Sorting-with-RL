@@ -162,7 +162,7 @@ class DDQNAgent:
 				return False
 		return True
 
-	def run_episode(self, max_steps, forced=None):
+	def run_episode(self, max_steps, forced=None, update_eps=True, update_model=True):
 		done = False
 		score = 0
 		state = self.env.reset(forced=forced)
@@ -184,17 +184,19 @@ class DDQNAgent:
 			next_state, reward, done, info = self.env.step(action)
 			next_state = self.state_transformer.transform(next_state)
 
-			# save the sample <s, a, r, s'> to the replay memory
-			self.append_sample(state, action, reward, next_state, done)
-			# every time step do the training
-			self.train_model()
+			if update_model:
+				# save the sample <s, a, r, s'> to the replay memory
+				self.append_sample(state, action, reward, next_state, done)
+				# every time step do the training
+				self.train_model()
 			score += reward
 			state = next_state
 
-		# every episode update the target model to be same with model
-		self.update_target_model()
+		if update_model:
+			# every episode update the target model to be same with model
+			self.update_target_model()
 
-		if self.epsilon > self.epsilon_min:
+		if update_eps and self.epsilon > self.epsilon_min:
 			self.epsilon *= self.epsilon_decay
 
 		return score
@@ -234,7 +236,7 @@ class DDQNAgent:
 			plot(scores)
 			plot_running_avg(scores)
 
-	def solve(self, permutation, its=100, max_steps=100, exploit_greedy_trace=False):
+	def solve(self, permutation, its=100, max_steps=100, exploit_greedy_trace=False, update_eps=False, update_model=False):
 		ans = None
 		if exploit_greedy_trace:
 			trace = []
@@ -244,7 +246,8 @@ class DDQNAgent:
 				last_ans = None
 				# noinspection PyUnboundLocalVariable
 				for p in trace[::-1]:
-					last_ans = self.run_episode(max_steps=max_steps, forced=p)
+					last_ans = self.run_episode(
+						max_steps=max_steps, forced=p, update_model=update_model, update_eps=update_eps)
 				if ans is None or last_ans > ans:
 					ans = last_ans
 			else:
