@@ -85,15 +85,15 @@ RL can be thought of as a sequence of episodes. Each of which consists of the ag
 
 \subsection{Exploitation vs. Exploration}
  
-A major concern in RL is the exploitation/explorarion trade-off. Exploration is about exploring new possibilities within the environment and finding out more information about it. Exploitation, on the other hand, is related to exploiting already known information so as to maximize the total reward. 
+A major concern in RL is the exploitation/exploration trade-off. Exploration is about exploring new possibilities within the environment and finding out more information about it. Exploitation, on the other hand, is related to exploiting already known information so as to maximize the total reward. 
 
 Initially, the agent has no other option but to randomly explore the environment; however, as it learns about its surroundings, it can fall into the trap of sticking to safe known actions and miss larger rewards that depend on exploring unknown states.
 
-This work uses the Epsilon-greedy strategy to address that problem. It specifies an exploration rate $\epsilon$, which is set to 1 initially. This rate definies the ratio of the steps that will be done randomly. Before selecting an action, the agent generates a random number $x$. If $x > \epsilon$, then it will select the best known action (exploit); otherwise, it will select an action at random (explore). As the agent acquires more knowledge about the environment, $\epsilon$ is progressively reduced.
+This work uses the Epsilon-greedy strategy to address that problem. It specifies an exploration rate $\epsilon$, which is set to 1 initially. This rate defines the ratio of the steps that will be done randomly. Before selecting an action, the agent generates a random number $x$. If $x > \epsilon$, then it will select the best known action (exploit); otherwise, it will select an action at random (explore). As the agent acquires more knowledge about the environment, $\epsilon$ is progressively reduced.
 
 \subsection{Q-table and the Bellman Equation}
 
-In value-based RL, the branch being considered in this work, the efforts are concentraded on maximizing the value function $V_\pi$:
+In value-based RL, the branch being considered in this work, the efforts are concentrated on maximizing the value function $V_\pi$:
 
 \begin{equation}
 	V_\pi(s) = \mathbb{E}_{\pi} [G(t)\ |\ S_t = s]
@@ -125,7 +125,7 @@ The above form can be used alongside dynamic programming to develop iterative ap
 
 If one can calculate the Q-table from equation \ref{qtable}, they could trivially come up with a great policy. At each state $s$, the agent should simply be greedy and select the action $a$ that maximizes $Q^\pi(s, a)$. As mentioned in the last section, finding the Q-table can be easily done with dynamic programming.
 
-However, as the number of states grows largers, dynamic programming and other iterative approaches become unfeasible due to our computers' memory and time limitations. Fortunately, it turns out that the Q-table can be approximated instead of having its exact values determined, and it will still produce great results~\cite{dp_approx}. This work tries to achieve that using both linear regression and deep neural networks.
+However, as the number of states grows larger, dynamic programming and other iterative approaches become unfeasible due to our computers' memory and time limitations. Fortunately, it turns out that the Q-table can be approximated instead of having its exact values determined, and it will still produce great results~\cite{dp_approx}. This work tries to achieve that using both linear regression and deep neural networks.
 
 \subsection{Monte Carlo and Temporal Difference Learning}
 
@@ -140,7 +140,7 @@ In Monte Carlo Approaches, the agent plays an entire episode, keeping track of t
 	\end{tabular}\nonumber
 \end{gather}
 
-Therefore, the agent only learns after an entire episode has been played. In Temporal Diference Learning, on the other hand, the value of $V$ is updated after each timestep. At time $t+1$, the observations made during time $t$ are already being considered. In its simplest form, the method is called TD(0) or 1-step TD, and its update equation is as follows:
+Therefore, the agent only learns after an entire episode has been played. In Temporal Difference Learning, on the other hand, the value of $V$ is updated after each timestep. At time $t+1$, the observations made during time $t$ are already being considered. In its simplest form, the method is called TD(0) or 1-step TD, and its update equation is as follows:
 
 \begin{equation} \label{td0}
 	V(S_t) \leftarrow V(S_t) + \alpha [R_{t+1} + \gamma V(S_{t+1}) - V(S_t)]
@@ -189,7 +189,7 @@ To overcome that, a second network, called target network, can be used to provid
 
 \subsubsection{Double Learning}\label{double_learning}
 
-Due to the $\max$ term presented in both equations \ref{qlearning} and \ref{new_qlearning}, the approximation tends to overstimate the Q function value, which can severely impact on stability of the algorithm~\cite{overestimation}. A solution proposed by Hado van Hasselt (2010)~\cite{doubleq2010}, called Double Learning, consists of using two Q functions, $Q_1$ and $Q_2$, that are independently learned. One function is then used to determine the maximizing action and second to estimate its value. As we are already making use of two different networks, Hado van Hasselt's approach can be easily introduced to the update equation \ref{new_qlearning}. Its augmented version is as follows:
+Due to the $\max$ term presented in both equations \ref{qlearning} and \ref{new_qlearning}, the approximation tends to overestimate the Q function value, which can severely impact on stability of the algorithm~\cite{overestimation}. A solution proposed by Hado van Hasselt (2010)~\cite{doubleq2010}, called Double Learning, consists of using two Q functions, $Q_1$ and $Q_2$, that are independently learned. One function is then used to determine the maximizing action and second to estimate its value. As we are already making use of two different networks, Hado van Hasselt's approach can be easily introduced to the update equation \ref{new_qlearning}. Its augmented version is as follows:
 
 \begin{equation}\label{double_equation}
 	Q(s, a) \leftarrow Q(s, a) + \alpha [R_{t+1} + \gamma \widetilde{Q}(s', \argmax_{a'}{Q(s', a')}) - Q(s,a)]
