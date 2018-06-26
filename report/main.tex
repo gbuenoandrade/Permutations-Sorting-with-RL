@@ -54,15 +54,17 @@ Andre Rodrigues Oliveira\thanks{Institute of Computing, University of Campinas, 
 
 \begin{abstract} 
 
-Finding the minimum number of mutations necessary for one genome to transform into another is a major problem in molecular biology. This problem can be reduced to sorting a permutation using certain operations, where, in this work, the operations considered are reversals and transpositions. We present two different approaches using reinforcement learning to address that. Our results show that this approach is competitive when the permutations are small. However, converging gets trickier as $|p|$ grows larger.
+Finding the minimum number of mutations necessary for one genome to transform into another is a major problem in molecular biology. This problem can be reduced to sorting a permutation using certain genome rearrangements operations, where, in this work, the operations considered are reversals and transpositions. We present two different techniques using reinforcement learning to address that. Our results show that this approach is competitive for permutations of size $n < 15$. However, as the permutations grow larger, converging gets trickier.
 
 \end{abstract}
 
 \section{Introduction}
 
-Finding the minimum number of mutations necessary for one genome to transform into another using certain operations, a concept usually referred to as \textit{distance} between genomes, is a major problem in molecular biology. Two common operations are reversals and transpositions. A reversal happens when a fragment of the DNA filament gets reversed in the final replica, and a transposition when two fragments of DNA change places. 
+Finding the minimum number of mutations necessary for one genome to transform into another using genome rearrangements, a concept usually referred to as \textit{distance} between genomes, is a major problem in molecular biology. Two common operations are reversals and transpositions. A reversal happens when a fragment of the DNA filament gets reversed in the final replica, and a transposition when two consecutive fragments of DNA change places. 
 
-Formally, in this work we treat a genome of size $n$ as being equal to a permutation $p$ of integers from $0$ to $n$. Also, a reversal operation $f_r(i,j)$ applied to permutation $p = (p_0\ \ldots\ p_{i-1}\ p_{i}\ \ldots\ p_{j}\ \ldots\ p_{n-1})$ generates $p \cdot f_r(i,j) = (p_0\ \ldots\ p_{i-1}\ p_{j}\ \ldots\ p_{i}\ \ldots\ p_{n-1})$. Similarly, a transposition operation $f_t(i,j,k)$ applied to\\ $p = (p_0\ \ldots\ p_{i-1}\ p_{i}\ \ldots\ p_{j}\ p_{j+1}\ \ldots\ p_{k}\ p_{k+1}\ \ldots\ p_{n-1})$ generates\\ $p \cdot f_t(i,j,k) = (p_0\ \ldots\ p_{i-1}\ p_{j+1}\ \ldots\ p_{k}\ p_{i}\ \ldots\ p_{j}\ p_{k+1}\ \ldots\ p_{n-1})$. Finally, the distance $d(p, q)$ between permutations $p$ and $q$ is equal to the minimum number of operations needed to transform $p$ into $q$.
+Formally, in this work we treat a genome of size $n$ as being equal to a permutation $p$ of integers from $0$ to $n - 1$. Also, a reversal operation $f_r(i,j)$ applied to permutation $p = (p_0\ \ldots\ p_{i-1}\ p_{i}\ \ldots\ p_{j}\ \ldots\ p_{n-1})$ generates $p \cdot f_r(i,j) = (p_0\ \ldots\ p_{i-1}\ p_{j}\ \ldots\ p_{i}\ \ldots\ p_{n-1})$. Similarly, a transposition operation $f_t(i,j,k)$ applied to\\ $p = (p_0\ \ldots\ p_{i-1}\ p_{i}\ \ldots\ p_{j}\ p_{j+1}\ \ldots\ p_{k}\ p_{k+1}\ \ldots\ p_{n-1})$ generates\\ $p \cdot f_t(i,j,k) = (p_0\ \ldots\ p_{i-1}\ p_{j+1}\ \ldots\ p_{k}\ p_{i}\ \ldots\ p_{j}\ p_{k+1}\ \ldots\ p_{n-1})$.
+
+Finally, as Phylogenetics (the study of evolutionary history and relationships between species) relies strongly on the Principle of Parsimony: the idea that, given a set of possible explanations for a fact, the simplest explanation is most likely to be correct ~\cite{parsimony}, the distance $d(p, q)$ between permutations $p$ and $q$ is equal to the minimum number of operations needed to transform $p$ into $q$. 
 
 It can be shown that finding $d(p, q)$ is equivalent to the problem of finding the distance between some permutation $\alpha$ and the identity permutation $\iota$~\cite{flavio}. Furthermore, Caprara (1999) proved that this problem is NP-Hard~\cite{caprara1999sorting}. That being so, this work proposes using Reinforcement Learning to come up with a heuristic for finding $d(p, \iota)$ for any arbitrary permutation $p$.
 
@@ -119,17 +121,17 @@ Furthermore, $Q$ can be expressed in terms of itself. An expression known as the
 	\end{tabular}\nonumber
 \end{gather}
 
-The above form can be used alongside dynamic programming to develop iterative approaches to solve the problem~\cite{sutton}.
+The above equation can be used alongside dynamic programming to develop iterative approaches to solve the problem~\cite{sutton}.
 
-\subsection{Function Approximation}
+\subsection{Function Approximation}\label{func_approx}
 
 If one can calculate the Q-table from equation \ref{qtable}, they could trivially come up with a great policy. At each state $s$, the agent should simply be greedy and select the action $a$ that maximizes $Q^\pi(s, a)$. As mentioned in the last section, finding the Q-table can be easily done with dynamic programming.
 
-However, as the number of states grows larger, dynamic programming and other iterative approaches become unfeasible due to our computers' memory and time limitations. Fortunately, it turns out that the Q-table can be approximated instead of having its exact values determined, and it will still produce great results~\cite{dp_approx}. This work tries to achieve that using both linear regression and deep neural networks.
+However, as the number of states grows larger, dynamic programming and other iterative approaches become infeasible due to space and time limitations. Fortunately, it turns out that the Q-table can be approximated instead of having its exact values determined, and it will still produce great results~\cite{dp_approx}. This work tries to achieve that using both linear regression and deep neural networks.
 
 \subsection{Monte Carlo and Temporal Difference Learning}
 
-In Monte Carlo Approaches, the agent plays an entire episode, keeping track of the rewards received at each timestep so it can calculate the cumulative discounted reward. After that, it updates the value function for each visited stated based on the expression~\cite{sutton}:
+In Monte Carlo Approaches, the agent plays an entire episode, keeping track of the rewards received at each time step so it can calculate the cumulative discounted reward. After that, it updates the value function for each visited stated based on the expression~\cite{sutton}:
 
 \begin{gather}
 	V(S_t) \leftarrow V(S_t) + \alpha [G(t) - V(S_t)]
@@ -140,7 +142,7 @@ In Monte Carlo Approaches, the agent plays an entire episode, keeping track of t
 	\end{tabular}\nonumber
 \end{gather}
 
-Therefore, the agent only learns after an entire episode has been played. In Temporal Difference Learning, on the other hand, the value of $V$ is updated after each timestep. At time $t+1$, the observations made during time $t$ are already being considered. In its simplest form, the method is called TD(0) or 1-step TD, and its update equation is as follows:
+Therefore, the agent only learns after an entire episode has been played. In Temporal Difference Learning, on the other hand, the value of $V$ is updated after each time step. At time $t+1$, the observations made during time $t$ are already being considered. In its simplest form, the method is called TD(0) or 1-step TD, and its update equation is as follows:
 
 \begin{equation} \label{td0}
 	V(S_t) \leftarrow V(S_t) + \alpha [R_{t+1} + \gamma V(S_{t+1}) - V(S_t)]
@@ -150,7 +152,7 @@ The right-hand side of the previous equation is referred to as the TD(0) error.
 
 \subsection{TD-Lambda}
 
-TD(0) is biased as it relies on information from a single timestep to perform its updates. It does not take into account the fact that the action that caused a reward might have happened several timesteps earlier, which can lead to slow convergence~\cite{tdlambda}. Monte Carlo methods, although not biased, have a lot of variance since they use the rewards of an entire episode in order to perform updates~\cite{tdlambda}.
+TD(0) is biased as it relies on information from a single time step to perform its updates. It does not take into account the fact that the action that caused a reward might have happened several time steps earlier, which can lead to slow convergence~\cite{tdlambda}. Monte Carlo methods, although not biased, have a lot of variance since they use the rewards of an entire episode in order to perform updates~\cite{tdlambda}.
 
 To overcome that, from equation \ref{td0}, we can define the 1-step return, $G_t^{(1)} = R_{t+1} + \gamma V(S_{t+1})$. We can extend the concept further to 2-step return, $G_t^{(2)} = R_{t+1} + \gamma R_{t+2} + \gamma^2 V(S_{t+2})$, and, generically, to, $G_t^{(n)} = R_{t+1} + \gamma R_{t+2} + \ldots + \gamma^n V(S_{t+n})$. 
 
@@ -198,21 +200,25 @@ Due to the $\max$ term presented in both equations \ref{qlearning} and \ref{new_
 
 \section{Experiment}
 
+This experiment focused on training two RL agents, each of which used a different algorithm. The agents were able to perform transpositions and reversals; however, due to limited computer resources available and similar results obtained, more attention was given to agents that could only perform reversals to make training faster. Their goal was to reach the identity permutation $\iota$ while maximizing total reward. 
+
+Initially, in subsection \ref{state_rep}, we discuss different ways to represent the permutations so we can use function approximation techniques (see subsection \ref{func_approx}). Later, in \ref{arch}, we talk about the agents' architecture and about a technique that was used to speed up the convergence in \ref{speed_conv}. Lastly, we present and discuss our results and conclusions.
+
 \subsection{Modeling}
 
-\subsubsection{State Representation}
+\subsubsection{State Representation}\label{state_rep}
 
 Three different state representations were considered. They are as follows.
 
 \begin{itemize}
-	\item \textit{One-Hot Encoding}: Each number is treaded as a category. By doing so, each $p$ is mapped to a matrix $m$, where $m_{ij} = 1$ if $p_i = j$, and $0$ otherwise. 
+	\item \textit{One-Hot Encoding}: Each number is treated as a category. By doing so, each $p$ is mapped to a matrix $m$, where $m_{ij} = 1$ if $p_i = j$, and $0$ otherwise. 
 	\item \textit{Min-Max Normalization}: $P$ is mapped to an array $v$,\\ where $v_i = p_i / (|p| - 1)$.
 	\item \textit{Permutation Characterization}: $p$ is mapped to an array $v$ of $30$ features, where the features are the ones described in the work by F. A. M. da Silva, A. R. Oliveira, and Z. Dias (2017)~\cite{flavio}.
 \end{itemize}
 
-\subsubsection{Proposed Architecture}
+\subsubsection{Proposed Architecture}\label{arch}
 
-The experiment was based on two different architectures. The first one consisted of a Double Deep Q-Network (DDQN), with a main network and a secondary target network. Also, it included both experience replay (see \ref{experience}) and double learning (see \ref{double_learning}) optimizations.
+The experiment was based on two different architectures. The first one consisted of a Double Deep Q-Network (DDQN), with a main network and a secondary target network. Also, it included experience replay (see \ref{experience}) and double learning (see \ref{double_learning}) optimizations.
 
 Both main and secondary networks used the following architecture:
 
@@ -280,7 +286,7 @@ Nevertheless, we tried a second different approach. An agent based on the TD-Lam
 	\end{center}
 \end{table}
 
-\subsubsection{Speeding up the Convergence}
+\subsubsection{Speeding up the Convergence}\label{speed_conv}
 
 Despite being finite, the state space is still enormous given that it is in $\mathcal{O}(|p|!)$. Being that the case, several techniques were tried so as to decrease training time. The ones that seemed more promising are mentioned below:
 
@@ -319,7 +325,7 @@ Despite being finite, the state space is still enormous given that it is in $\ma
 
 \subsection{Results and Discussion}
 
-The models were trained experiencing $10000$ episodes, each of which had $s_0$ set to a random permutation. After that, in order for the models to effectively sort a permutation $p$, the exploration rate $\epsilon$ was kept constant and equal to $0.2$, and then the models were run for another $100$ episodes, where $s_0$ was always equal to $p$. The best score among those simulations was considered the model's answer $\hat{d}(p, \iota)$. Finally, the performance ratio $\eta = \hat{d}(p, \iota) / d(p, \iota)$ was used to compare different configurations. The closer $\eta$ was to $1$, the better.
+The models were trained experiencing $10000$ episodes, each of which had $S_0$ set to a random permutation of a fixed size $n$ using NumPy's random permutation generator~\cite{numpy_permut}. After that, in order for the models to effectively sort a permutation $p$, the exploration rate $\epsilon$ was kept constant and equal to $0.2$, and then the models were run for another $100$ episodes, where $S_0$ was always equal to $p$. The best score among those simulations was considered the model's answer $\hat{d}(p, \iota)$. Finally, the performance ratio $\eta = \hat{d}(p, \iota) / d(p, \iota)$ was used to compare different configurations. The closer $\eta$ was to $1$, the better.
 
 Based on $\eta$, it was found that one-hot encoding state representation was slightly better than our other different attempts (see figure \ref{chart:state}). Nonetheless, investigating more effective representations so as to lead to better generalizations is a pending task. Also, as expected, our DDQN agent presented much better results than the ones presented by our simpler one based on TD-Lambda algorithm (see figure \ref{chart:alg}).
 
@@ -339,15 +345,19 @@ Based on $\eta$, it was found that one-hot encoding state representation was sli
 \end{minipage}
 \end{figure}
 
-Having defined the best RL architecture based on the results above, we ran it against Kececioglu and Sankoff (1995)'s greedy approach. Our model consistently outperformed theirs when $|p| < 15$ (see figure \ref{chart:rl_greedy}). However, converging starts getting tricky and time-consuming as $|p|$ gets bigger. So, it is still early to define our approach as being \textit{practical}. 
+Having defined the best RL architecture based on the results above, we ran it against Kececioglu and Sankoff (1995)'s greedy approach. Our model consistently outperformed theirs (see figure \ref{chart:rl_greedy}). However, converging starts getting tricky and time-consuming as $n$ gets bigger. So, it is still early to define our approach as being \textit{practical}. 
 
 \begin{figure}[H]
 	\begin{center}
 		\includegraphics[scale=0.8]{charts/rl_greedy_comp.pdf}
-		\caption{RL vs. Kececioglu and Sankoff's greedy approach}
+		\caption{RL vs. Kececioglu and Sankoff's greedy approach for $n = 10$}
 		\label{chart:rl_greedy}
 	\end{center}
 \end{figure}
+
+\subsection{Conclusions}
+
+This work involved building different RL agents to sort permutations by reversals and transpositions. Interesting results were obtained for small permutations, but performance was a bottleneck when they got bigger. Future work could try to address that by using distributed deep Q-learning methods~\cite{dist_dqnn1, dist_dqnn2} and considering recent findings related to large discrete action spaces~\cite{large_space}.
 
 \bibliographystyle{abbrv}
 \bibliography{main}
