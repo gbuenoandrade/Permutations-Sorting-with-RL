@@ -33,14 +33,14 @@
 \TRAuthor{Guilherme Bueno Andrade \and Andre Rodrigues Oliveira \and Zanoni Dias}
 
 % TÍTULO PARA A CAPA (use \\ para forçar quebras de linha).
-\TRTitle{Sorting Permutations by Reversals and Transpositions with Reinforcement Learning}
+\TRTitle{Sorting Permutations by Reversals with Reinforcement Learning}
 
 \TRMakeCover
 
 \markboth{Andrade, Oliveira and Dias}{Sorting Permutations with RL}
 \pagestyle{myheadings}
 
-\title{Sorting Permutations by Reversals and Transpositions\\ with Reinforcement Learning}
+\title{Sorting Permutations by Reversals\\ with Reinforcement Learning}
 
 \newcommand*\samethanks[1][\value{footnote}]{\footnotemark[#1]}
 \author{Guilherme Bueno Andrade\thanks{gbuenoandrade@gmail.com} \and
@@ -54,7 +54,7 @@ Andre Rodrigues Oliveira\thanks{Institute of Computing, University of Campinas, 
 
 \begin{abstract} 
 
-Finding the minimum number of mutations necessary for one genome to transform into another is a major problem in molecular biology. This problem can be reduced to sorting a permutation using certain genome rearrangements operations, where, in this work, the operations considered are reversals and transpositions. We present two different techniques using reinforcement learning to address that. Our results show that this approach is competitive for permutations of size $n < 15$. However, as the permutations grow larger, converging gets trickier.
+Finding the minimum number of mutations necessary for one genome to transform into another is a major problem in molecular biology. If genomes are represented as numeric permutations, this problem can be reduced to sorting such permutations using certain genome rearrangements operations, where, in this work, reversals operations are the main focus. We present two different techniques using reinforcement learning to address that. Our results show that this approach is competitive for permutations of size $n < 11$. However, as the permutations grow larger, converging gets trickier.
 
 \end{abstract}
 
@@ -62,11 +62,13 @@ Finding the minimum number of mutations necessary for one genome to transform in
 
 Finding the minimum number of mutations necessary for one genome to transform into another using genome rearrangements, a concept usually referred to as \textit{distance} between genomes, is a major problem in molecular biology. Two common operations are reversals and transpositions. A reversal happens when a fragment of the DNA filament gets reversed in the final replica, and a transposition when two consecutive fragments of DNA change places. 
 
-Formally, in this work we treat a genome of size $n$ as being equal to a permutation $p$ of integers from $0$ to $n - 1$. Also, a reversal operation $f_r(i,j)$ applied to permutation $p = (p_0\ \ldots\ p_{i-1}\ p_{i}\ \ldots\ p_{j}\ \ldots\ p_{n-1})$ generates $p \cdot f_r(i,j) = (p_0\ \ldots\ p_{i-1}\ p_{j}\ \ldots\ p_{i}\ \ldots\ p_{n-1})$. Similarly, a transposition operation $f_t(i,j,k)$ applied to\\ $p = (p_0\ \ldots\ p_{i-1}\ p_{i}\ \ldots\ p_{j}\ p_{j+1}\ \ldots\ p_{k}\ p_{k+1}\ \ldots\ p_{n-1})$ generates\\ $p \cdot f_t(i,j,k) = (p_0\ \ldots\ p_{i-1}\ p_{j+1}\ \ldots\ p_{k}\ p_{i}\ \ldots\ p_{j}\ p_{k+1}\ \ldots\ p_{n-1})$.
+Formally, in this work we treat a genome of size $n$ as being equal to a permutation $p$ of integers from $0$ to $n - 1$. Also, we define the composition of permutations $p$ and $q$ as being $p \cdot q = (p_{q_0}\ p_{q_1}\ \ldots\ p_{q_{n-1}})$. In addition to that, we assume that a reversal operation $f_r(i,j)$ applied to permutation $p = (p_0\ \ldots\ p_{i-1}\ \underline{p_{i}\ \ldots\ p_{j}}\ \ldots\ p_{n-1})$ generates $p \cdot f_r(i,j) = (p_0\ \ldots\ p_{i-1}\ \underline{p_{j}\ \ldots\ p_{i}}\ \ldots\ p_{n-1})$.
 
-Finally, as Phylogenetics (the study of evolutionary history and relationships between species) relies strongly on the Principle of Parsimony: the idea that, given a set of possible explanations for a fact, the simplest explanation is most likely to be correct ~\cite{parsimony}, the distance $d(p, q)$ between permutations $p$ and $q$ is equal to the minimum number of operations needed to transform $p$ into $q$. 
+Finally, as Phylogenetics (the study of evolutionary history and relationships between species) relies strongly on the Principle of Parsimony, the idea that, given a set of possible explanations for a fact, the simplest explanation is most likely to be correct ~\cite{parsimony}, the distance $d(p, q)$ between permutations $p$ and $q$ is the minimum number of operations needed to transform $p$ into $q$. 
 
-It can be shown that finding $d(p, q)$ is equivalent to the problem of finding the distance between some permutation $\alpha$ and the identity permutation $\iota$~\cite{flavio}. Furthermore, Caprara (1999) proved that this problem is NP-Hard~\cite{caprara1999sorting}. That being so, this work proposes using Reinforcement Learning to come up with a heuristic for finding $d(p, \iota)$ for any arbitrary permutation $p$.
+Finding $d(p, q)$ is equivalent to the problem of finding the distance between some permutation $\alpha$ and the identity permutation $\iota$, where $\alpha = q^{-1} \cdot p$. That is the case because $d(p, q) = d(q^{-1} \cdot p, q^{-1} \cdot q) = d(\alpha, \iota)$. Furthermore, Caprara proved that finding $d$ is NP-hard~\cite{caprara1999sorting}. That being so, this work proposes using Reinforcement Learning to come up with a heuristic for finding $d(p, \iota)$ for any arbitrary permutation $p$.
+
+In the next Section, we start by introducting several Reinforcement Learning ideas that were used during the project conception. Later, in Section \ref{section:expr}, we conclude by talking about implementation details and discussing our findings.
 
 \section{Reinforcement Learning}
 
@@ -198,7 +200,7 @@ Due to the $\max$ term presented in both equations \ref{qlearning} and \ref{new_
 \end{equation}
 
 
-\section{Experiment}
+\section{Experiment}\label{section:expr}
 
 This experiment focused on training two RL agents, each of which used a different algorithm. The agents were able to perform transpositions and reversals; however, due to limited computer resources available and similar results obtained, more attention was given to agents that could only perform reversals to make training faster. Their goal was to reach the identity permutation $\iota$ while maximizing total reward. 
 
