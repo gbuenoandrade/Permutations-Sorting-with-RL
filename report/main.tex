@@ -54,13 +54,13 @@ Andre Rodrigues Oliveira\thanks{Institute of Computing, University of Campinas, 
 
 \begin{abstract} 
 
-Finding the minimum number of mutations necessary for one genome to transform into another is a major problem in molecular biology. If genomes are represented as numeric permutations, this problem can be reduced to sorting such permutations using certain genome rearrangements operations, where, in this work, reversals operations are the main focus. We present two different techniques using reinforcement learning to address that. Our results show that this approach is competitive for permutations of size $n < 11$. However, as the permutations grow larger, converging gets trickier.
+Finding the minimum number of mutations necessary for one genome to transform into another is a major problem in molecular biology. If genomes are represented as numeric permutations, this problem can be reduced to sorting such permutations using certain genome rearrangements operations, where, in this work, reversals operations are the main focus. We present two different techniques using reinforcement learning to address that. Our results show that this approach is competitive for permutations of size $n < 11$. However, as the permutations grow, converging gets trickier.
 
 \end{abstract}
 
 \section{Introduction}
 
-Finding the minimum number of mutations necessary for one genome to transform into another using genome rearrangements, a concept usually referred to as \textit{distance} between genomes, is a major problem in molecular biology. Two common operations are reversals and transpositions. A reversal happens when a fragment of the DNA filament gets reversed in the final replica, and a transposition when two consecutive fragments of DNA change places. 
+Finding the minimum number of mutations necessary for one genome to transform into another using genome rearrangements, a concept usually referred to as \textit{distance} between genomes, is a major problem in molecular biology. Common operations are reversals. They happen when a fragment of the DNA filament gets reversed in the final replica. 
 
 Formally, in this work we treat a genome of size $n$ as being equal to a permutation $p$ of integers from $0$ to $n - 1$. Also, we define the composition of permutations $p$ and $q$ as being $p \cdot q = (p_{q_0}\ p_{q_1}\ \ldots\ p_{q_{n-1}})$. In addition to that, we assume that a reversal operation $f_r(i,j)$ applied to permutation $p = (p_0\ \ldots\ p_{i-1}\ \underline{p_{i}\ \ldots\ p_{j}}\ \ldots\ p_{n-1})$ generates $p \cdot f_r(i,j) = (p_0\ \ldots\ p_{i-1}\ \underline{p_{j}\ \ldots\ p_{i}}\ \ldots\ p_{n-1})$.
 
@@ -110,7 +110,7 @@ In value-based RL, the branch being considered in this work, the efforts are con
 	\end{tabular}\nonumber
 \end{gather}
 
- $V_\pi$ can be generalized so as to also consider the action taken at time step $t$, which is known as Q-table:
+ $V_\pi$ can be generalized so as to also consider the action $a$ taken at time step $t$, which is known as Q-table:
 
 \begin{equation} \label{qtable}
 	Q^\pi(s, a) = \mathbb{E}_{\pi} [G(t)\ |\ S_t = s,\ A_t = a]
@@ -193,7 +193,6 @@ To overcome that, a second network, called target network, can be used to provid
 	Q(s, a) \leftarrow Q(s, a) + \alpha (R_{t+1} + \gamma \max_{a'}\widetilde{Q}(s', a') - Q(s,a))
 \end{equation}
 
-
 \subsubsection{Double Learning}\label{double_learning}
 
 Due to the $\max$ term presented in both equations \ref{qlearning} and \ref{new_qlearning}, the approximation tends to overestimate the Q function value, which can severely impact on stability of the algorithm~\cite{overestimation}. A solution proposed by Hado van Hasselt (2010)~\cite{doubleq2010}, called Double Learning, consists of using two Q functions, $Q_1$ and $Q_2$, that are independently learned. One function is then used to determine the maximizing action and second to estimate its value. As we are already making use of two different networks, Hado van Hasselt's approach can be easily introduced to the update Equation \ref{new_qlearning}. Its augmented version is as follows:
@@ -202,14 +201,13 @@ Due to the $\max$ term presented in both equations \ref{qlearning} and \ref{new_
 	Q(s, a) \leftarrow Q(s, a) + \alpha (R_{t+1} + \gamma \widetilde{Q}(s', \argmax_{a'}{Q(s', a')}) - Q(s,a))
 \end{equation}
 
-
 \section{Experiment}\label{section:expr}
 
-This experiment focused on training two RL agents, each of which used a different algorithm. The agents were able to perform transpositions and reversals; however, due to limited computer resources available and similar results obtained, more attention was given to agents that could only perform reversals to make training faster. Their goal was to reach the identity permutation $\iota$ while maximizing total reward. 
-
-Initially, in subsection \ref{state_rep}, we discuss different ways to represent the permutations so we can use function approximation techniques. Later, in \ref{arch}, we talk about the agents' architecture and about a technique that was used to speed up the convergence in \ref{speed_conv}. Lastly, we present and discuss our results and conclusions.
+Initially, in Section \ref{state_rep}, we discuss different ways to represent the permutations so we can use function approximation techniques. Later, in Section \ref{arch}, we talk about the agents' architecture and about a technique that was used to speed up the convergence in Section \ref{speed_conv}. Lastly, we present and discuss our results and conclusions.
 
 \subsection{Modeling}
+
+The agents were implemented so as to perform not only reversals, but also another important genome rearrangement: transposition; however, due to limited computer resources available, we decided later to limit our agents to only perform reversals to make training faster. Their goal was to reach the identity permutation $\iota$ while maximizing total reward. 
 
 \subsubsection{State Representation}\label{state_rep}
 
@@ -217,13 +215,13 @@ Three different state representations were considered. They are as follows.
 
 \begin{itemize}
 	\item \textit{One-Hot Encoding}: Each number is treated as a category. By doing so, each $p$ is mapped to a matrix $m$, where $m_{ij} = 1$ if $p_i = j$, and $0$ otherwise. 
-	\item \textit{Min-Max Normalization}: $P$ is mapped to an array $v$,\\ where $v_i = p_i / (|p| - 1)$.
-	\item \textit{Permutation Characterization}: $p$ is mapped to an array $v$ of $30$ features, where the features are the ones described in the work by F. A. M. da Silva, A. R. Oliveira, and Z. Dias (2017)~\cite{flavio}.
+	\item \textit{Min-Max Normalization}: $p$ is mapped to an array $v$, where $v_i = p_i / (|p| - 1)$.
+	\item \textit{Permutation Characterization}: $p$ is mapped to an array $v$ of $30$ features, where the features are the ones described in the work by Silva, Oliveira, and Dias~\cite{flavio}.
 \end{itemize}
 
 \subsubsection{Proposed Architecture}\label{arch}
 
-The experiment was based on two different architectures. The first one consisted of a Double Deep Q-Network (DDQN), with a main network and a secondary target network. Also, it included experience replay (see \ref{experience}) and double learning (see \ref{double_learning}) optimizations.
+The experiment was based on two different architectures. The first one consisted of a Double Deep Q-Network (DDQN), with a main network and a secondary target network. Also, it included experience replay (see Section \ref{experience}) and double learning (see Section \ref{double_learning}) optimizations.
 
 Both main and secondary networks used the following architecture:
 
@@ -233,7 +231,7 @@ Both main and secondary networks used the following architecture:
 			\hline
 			Layer & Number of Units & Activation & Type \\
 			\hline\hline
-			Input layer & - & - & - \\ 
+			Input layer & - & Linear & - \\ 
 			\hline
 			Hidden layer 1 & 256 & ReLU & Fully-connected\\
 			\hline
@@ -246,7 +244,7 @@ Both main and secondary networks used the following architecture:
 	\end{center}
 \end{table}
 
-Furthermore, the hyperparameters selected were as follows:
+Furthermore, after tuning, the hyperparameters selected were as follows:
 
 \begin{table}[H]
 	\begin{center}
@@ -269,7 +267,7 @@ Furthermore, the hyperparameters selected were as follows:
 	\end{center}
 \end{table}
 
-Nevertheless, we tried a second different approach. An agent based on the TD-Lambda algorithm was also built. In order to approximate the Q-table, it relied on a much simpler linear regressor. Also, since $Q$ is highly nonlinear (see equation \ref{bellman}), the radial basis function kernel was used as a pre-processing step. The agent's hyperparameters were the following:
+Nevertheless, we tried a second approach. An agent based on the TD-Lambda algorithm was also built. In order to approximate the Q-table, it relied on a much simpler linear regressor. Also, since $Q$ is highly nonlinear (see Equation \ref{bellman}), the radial basis function kernel was used as a pre-processing step. The agent's hyperparameters were the following:
 
 \begin{table}[H]
 	\begin{center}
@@ -293,13 +291,13 @@ Nevertheless, we tried a second different approach. An agent based on the TD-Lam
 
 \subsubsection{Speeding up the Convergence}\label{speed_conv}
 
-Despite being finite, the state space is still enormous given that it is in $\mathcal{O}(|p|!)$. Being that the case, several techniques were tried so as to decrease training time. The ones that seemed more promising are mentioned below:
+During our initial tests, the Q-table took a long time to converge to optimal values. Being that the case, several techniques were tried so as to decrease training time. The one that seemed more promising is described below:
 
 \begin{itemize}
-	\item \textit{Greedy Pre-Training}: Kececioglu and Sankoff (1995)~\cite{Kececioglu1995} presented a 2-approximation for sorting a permutation using reversals, its output is represented below:
+	\item \textit{Greedy Pre-Training}: Kececioglu and Sankoff~\cite{Kececioglu1995} presented a 2-approximation for sorting a permutation using reversals, its output is represented below:
 
 	\begin{gather}\label{greedy}
-		d(p) = (p,\ a(p),\ a'(a(p)),\ \ldots,\ \iota)
+		\widetilde{d}(p) = (p,\ a(p),\ a'(a(p)),\ \ldots,\ \iota)
 		,
 	\intertext{Where:}
 		\begin{tabular}{>{$}r<{$}@{\ :\ }l}
@@ -308,9 +306,9 @@ Despite being finite, the state space is still enormous given that it is in $\ma
 		\end{tabular}\nonumber
 	\end{gather}
 
-	From expression \ref{greedy}, let $\hat{V}$:
+	From Equation \ref{greedy}, let $\hat{V}$:
 	\begin{equation}
-		\hat{V}(s) = (\gamma^{|d(s)|} - 1) / (\gamma - 1)
+		\hat{V}(s) = (\gamma^{|\widetilde{d}(s)|} - 1) / (\gamma - 1)
 	\end{equation}
 
 	Furthermore, we can define function $\hat{Q}$, which can be shown to be lower bound on $Q$:
@@ -330,39 +328,39 @@ Despite being finite, the state space is still enormous given that it is in $\ma
 
 \subsection{Results and Discussion}
 
-The models were trained experiencing $10000$ episodes, each of which had $S_0$ set to a random permutation of a fixed size $n$ using NumPy's random permutation generator~\cite{numpy_permut}. After that, in order for the models to effectively sort a permutation $p$, the exploration rate $\epsilon$ was kept constant and equal to $0.2$, and then the models were run for another $100$ episodes, where $S_0$ was always equal to $p$. The best score among those simulations was considered the model's answer $\hat{d}(p, \iota)$. Finally, the performance ratio $\eta = \hat{d}(p, \iota) / d(p, \iota)$ was used to compare different configurations. The closer $\eta$ was to $1$, the better.
+The models were trained experiencing $10000$ episodes, each of which had $S_0$ set to a random permutation of size $n = 10$ using NumPy's random permutation generator~\cite{numpy_permut} (see Figure \ref{chart:dist_evolution}). After that, in order for the models to effectively sort a permutation $p$, the exploration rate $\epsilon$ was kept constant and equal to $0.2$, and then the models were run for another $100$ episodes, where $S_0$ was always equal to $p$. The best score among those simulations was considered the model's answer $\hat{d}(p, \iota)$. Finally, we used Kececioglu and Sankoff's greedy algorithm output $|\widetilde{d}(p)|$ and ours for $1000$ random permutations as a way to measure the model's performance.
 
-Based on $\eta$, it was found that one-hot encoding state representation was slightly better than our other different attempts (see figure \ref{chart:state}). Nonetheless, investigating more effective representations so as to lead to better generalizations is a pending task. Also, as expected, our DDQN agent presented much better results than the ones presented by our simpler one based on TD-Lambda algorithm (see figure \ref{chart:alg}).
+As we can see in Table \ref{table:results}, one-hot encoding state representation is slightly better than our Min-Max approach. The former beat Kececioglu and Sankoff's in 28.0\% of the simulations, while the latter only in 21.7\%. Nonetheless, investigating more effective representations so as to lead to better generalizations is a pending task. Also, we did not manage to reach convergence using either DDQN and Permutation Characterization or the TD-Lambda agent for permutations of size $n > 8$. Regarding our best RL archicture - DDQN and One-Hot Encoding, it consistently outperformed Kececioglu and Sankoff's. However, converging starts getting tricky and time-consuming as $n$ gets bigger. So, it is still early to define our approach as being \textit{practical}.
 
-\begin{figure}[H]
-\centering
-\begin{minipage}{.48\textwidth}
-  \centering
-	\includegraphics[scale=0.5]{charts/states_comp.pdf}
-  \caption{Different state representations}
-  \label{chart:state}
-\end{minipage}%
-\begin{minipage}{.48\textwidth}
-  \centering
-\includegraphics[scale=0.5]{charts/lambda_ddqn.pdf}
-  \caption{Different algorithms}
-  \label{chart:alg}
-\end{minipage}
-\end{figure}
+\begin{table}[H]
+	\begin{center}
+		\begin{tabular}{|c|c|c|c|c|}
+			\hline
+			Configuration & $\hat{d} < |\widetilde{d}|$ & $\hat{d} = |\widetilde{d}|$ & $\hat{d} > |\widetilde{d}|$ & Avg $\hat{d}/d$\\
+			\hline\hline
+			\textbf{DDQN and One-Hot Encoding} & \textbf{28.0\%} & \textbf{64.7\%} & \textbf{7.3\%} & \textbf{1.0255}\\
+			DDQN and Min-Max Normalization & 21.7\% & 61.2\% & 17.1\% & 1.0574\\
+			DDQN and Permutation Characterization & 0.0\% & 0.0\% & 100.0\% & $\infty$\\
+			TD-Lambda & 0.0\% & 0.0\% & 100.0\% & $\infty$\\
+			\hline
+		\end{tabular}
+		\caption{Summary of the performance of different model configurations}
+	\label{table:results}
+	\end{center}
+\end{table}
 
-Having defined the best RL architecture based on the results above, we ran it against Kececioglu and Sankoff (1995)'s greedy approach. Our model consistently outperformed theirs (see figure \ref{chart:rl_greedy}). However, converging starts getting tricky and time-consuming as $n$ gets bigger. So, it is still early to define our approach as being \textit{practical}. 
 
 \begin{figure}[H]
 	\begin{center}
-		\includegraphics[scale=0.8]{charts/rl_greedy_comp.pdf}
-		\caption{RL vs. Kececioglu and Sankoff's greedy approach for $n = 10$}
-		\label{chart:rl_greedy}
+		\includegraphics[scale=0.8]{charts/dist_evolution.pdf}
+		\caption{Distance estimation evolution for DDQN and One-Hot Encoding}
+		\label{chart:dist_evolution}
 	\end{center}
 \end{figure}
 
 \subsection{Conclusions}
 
-This work involved building different RL agents to sort permutations by reversals and transpositions. Interesting results were obtained for small permutations, but performance was a bottleneck when they got bigger. Future work could try to address that by using distributed deep Q-learning methods~\cite{dist_dqnn1, dist_dqnn2} and considering recent findings related to large discrete action spaces~\cite{large_space}.
+This work involved building different RL agents to sort permutations by reversals. Interesting results were obtained for small permutations, but performance was a bottleneck when they got bigger. Future work could try to address that by using distributed deep Q-learning methods~\cite{dist_dqnn1, dist_dqnn2} and considering recent findings related to large discrete action spaces~\cite{large_space}.
 
 \bibliographystyle{abbrv}
 \bibliography{main}
