@@ -60,19 +60,19 @@ Finding the minimum number of mutations necessary for one genome to transform in
 
 \section{Introduction}
 
-Finding the minimum number of mutations necessary for one genome to transform into another using genome rearrangements, a concept usually referred to as \textit{distance} between genomes, is a major problem in molecular biology. Common operations are reversals. They happen when a fragment of the DNA filament gets reversed in the final replica. 
+Finding the minimum number of mutations necessary for one genome to transform into another using genome rearrangements, a concept usually referred to as the \textit{distance} between genomes, is a major problem in molecular biology. A common operation is a reversal. It happens when a fragment of the DNA filament gets reversed in the final replica. 
 
-Formally, in this work we treat a genome of size $n$ as being equal to a permutation $p$ of integers from $0$ to $n - 1$. Also, we define the composition of permutations $p$ and $q$ as being $p \cdot q = (p_{q_0}\ p_{q_1}\ \ldots\ p_{q_{n-1}})$. In addition to that, we assume that a reversal operation $f_r(i,j)$ applied to permutation $p = (p_0\ \ldots\ p_{i-1}\ \underline{p_{i}\ \ldots\ p_{j}}\ \ldots\ p_{n-1})$ generates $p \cdot f_r(i,j) = (p_0\ \ldots\ p_{i-1}\ \underline{p_{j}\ \ldots\ p_{i}}\ \ldots\ p_{n-1})$.
+Formally, in this work we treat a genome of size $n$ as being equal to a permutation $p$ of integers from $0$ to $n{-1}$. Also, we define the \textit{composition} of permutations $p$ and $q$ as being $p \cdot q = (p_{q_0}\ p_{q_1}\ \ldots\ p_{q_{n-1}})$. In addition, we assume that a reversal operation $f_r(i,j)$ applied to permutation $p = (p_0\ \ldots\ p_{i-1}\ \underline{p_{i}\ \ldots\ p_{j}}\ \ldots\ p_{n-1})$ generates the permutation $p \cdot f_r(i,j) = (p_0\ \ldots\ p_{i-1}\ \underline{p_{j}\ \ldots\ p_{i}}\ \ldots\ p_{n-1})$.
 
 Finally, as Phylogenetics (the study of evolutionary history and relationships between species) relies strongly on the Principle of Parsimony, the idea that, given a set of possible explanations for a fact, the simplest explanation is most likely to be correct ~\cite{parsimony}, the distance $d(p, q)$ between permutations $p$ and $q$ is the minimum number of operations needed to transform $p$ into $q$. 
 
-Finding $d(p, q)$ is equivalent to the problem of finding the distance between some permutation $\alpha$ and the identity permutation $\iota$, where $\alpha = q^{-1} \cdot p$. That is the case because $d(p, q) = d(q^{-1} \cdot p, q^{-1} \cdot q) = d(\alpha, \iota)$. Furthermore, Caprara proved that finding $d$ is NP-hard~\cite{caprara1999sorting}. That being so, this work proposes using Reinforcement Learning to come up with a heuristic for finding $d(p, \iota)$ for any arbitrary permutation $p$.
+Note that finding $d(p, q)$ is equivalent to the problem of finding the distance between some permutation $\alpha$ and the identity permutation $\iota$, where $\alpha = q^{-1} \cdot p$. That is the case because $d(p, q) = d(q^{-1} \cdot p, q^{-1} \cdot q) = d(\alpha, \iota)$. Furthermore, Caprara proved that finding $d(p, \iota)$ is NP-hard~\cite{caprara1999sorting}. That being so, this work proposes using Reinforcement Learning to come up with a heuristic for finding $d(p, \iota)$ for any arbitrary permutation $p$.
 
-In the next Section, we start by introducting several Reinforcement Learning ideas that were used during the project conception. Later, in Section \ref{section:expr}, we conclude by talking about implementation details and discussing our findings.
+In the next Section, we start by introducing several Reinforcement Learning ideas that were used during the project conception. Later, in Section \ref{section:expr}, we conclude by talking about implementation details and discussing our findings.
 
 \section{Reinforcement Learning}
 
-This section introduces the main ideas and concepts from Reinforcement Learning that have been explored during the implementation of the project. It starts by introducing basic ideas from the field, and ends talking about the algorithms which supported our agents.
+This section introduces the main ideas and concepts from Reinforcement Learning that have been explored during the implementation of the project. It starts by introducing basic ideas from the field and ends talking about the algorithms which supported our agents.
 
 \subsection{Overview}
 
@@ -91,11 +91,11 @@ RL can be thought of as a sequence of episodes. Each of which consists of the ag
 
 \subsection{Exploitation vs. Exploration}
  
-A major concern in RL is the exploitation/exploration trade-off. Exploration is about exploring new possibilities within the environment and finding out more information about it. Exploitation, on the other hand, is related to exploiting already known information so as to maximize the total reward. 
+A major concern in RL is the exploitation/exploration trade-off. Exploration is about exploring new possibilities within the environment and finding out more information about it. Exploitation, on the other hand, is related to exploiting already known information to maximize the total reward. 
 
-Initially, the agent has no other option but to randomly explore the environment; however, as it learns about its surroundings, it can fall into the trap of sticking to safe known actions and miss larger rewards that depend on exploring unknown states.
+Initially, the agent has no other option but to randomly explore the environment; however, as it learns about its surroundings, it can fall into the trap of sticking to known safe actions and miss larger rewards that depend on exploring unknown states.
 
-This work uses the Epsilon-greedy strategy to address that problem. It specifies an exploration rate $\epsilon$, which is set to 1 initially. This rate defines the ratio of the steps that will be done randomly. Before selecting an action, the agent generates a random number $x$. If $x > \epsilon$, then it will select the best known action (exploit); otherwise, it will select an action at random (explore). As the agent acquires more knowledge about the environment, $\epsilon$ is progressively reduced.
+This work uses the Epsilon-greedy strategy to address that problem. It specifies an exploration rate $\epsilon$, which is set to 1 initially. This rate defines the ratio of the steps that will be done randomly. Before selecting an action, the agent generates a random number $x$. If $x > \epsilon$, then it will select the best-known action (exploit); otherwise, it will select an action at random (explore). As the agent acquires more knowledge about the environment, $\epsilon$ is progressively reduced.
 
 \subsection{Q-table and the Bellman Equation}
 
@@ -165,7 +165,7 @@ TD-Lambda methods use a mathematical trick to average all the possible n-step re
 
 \subsection{Q-learning}
 
-Q-learning is another technique based on Temporal Difference Learning to learn the Q-table. The main difference between it and the previous shown techniques is that Q-learning is off-policy, while TD(0) and TD-Lambda are on-policy~\cite{sutton}. This is reflected in its update equation, derived from the Bellman Equation~\cite{qlearning}:
+Q-learning is another technique based on Temporal Difference Learning to learn the Q-table. The main difference between it and the previously shown techniques is that Q-learning is off-policy, while TD(0) and TD-Lambda are on-policy~\cite{sutton}. This is reflected in its update equation, derived from the Bellman Equation~\cite{qlearning}:
 
 \begin{equation} \label{qlearning}
 	Q(s, a) \leftarrow Q(s, a) + \alpha (R_{t+1} + \gamma \max_{a'} Q(s', a') - Q(s,a))
@@ -175,13 +175,13 @@ The fact that there is no constraint acting upon action $a'$, only that it must 
 
 \subsubsection{Deep Q-learning}
 
-In order to approximate the Q-table to make using it feasible even when the number of states is very large, since Google AlphaGo's paper~\cite{alphago}, it has become common the use of deep neural networks. Even though standard Q-learning is proven to converge when there are finite states and each pair state-action is presented repeatedly~\cite{convergence_qlearning}, the same proof does not hold when neural networks are being used to calculate $Q$. To face with this issue, this work makes use of several ideas found in the literature~\cite{replay} to stabilize the training. They are presented in the following subsections.
+In order to approximate the Q-table to make using it feasible even when the number of states is very large, since Google AlphaGo's paper~\cite{alphago}, it has become common the use of deep neural networks. Even though standard Q-learning is proven to converge when there are finite states and each pair state-action is repeatedly presented~\cite{convergence_qlearning}, the same proof does not hold when neural networks are being used to calculate $Q$. To face with this issue, this work makes use of several ideas found in the literature~\cite{replay} to stabilize the training. They are presented in the following subsections.
 
 \subsubsection{Experience Replay}\label{experience}
 
-During each step of an episode, our estimation can be shifted according to Equation \ref{qlearning}. It is reasonable to think that as more truth is being introduced into the system, it will eventually converge; however, this is often not true. One of the reasons is that samples arrive in order they are experienced and as such are highly correlated. Also, by throwing away our samples immediately after we use it, we are not extracting all the knowledge they carry.
+During each step of an episode, our estimation can be shifted according to Equation \ref{qlearning}. It is reasonable to think that as more truth is being introduced into the system, it will eventually converge; however, this is often not true. One of the reasons is that samples arrive in the order they are experienced and as such are highly correlated. Also, by throwing away our samples immediately after we use it, we are not extracting all the knowledge they carry.
 
-Experience replay address that by storing samples into a queue, and, during each learning step, it samples a random batch and performs gradient descend on it. As samples get old, they are gradually discarded.
+Experience replay address that by storing samples in a queue, and, during each learning step, it samples a random batch and performs gradient descend on it. As samples get old, they are gradually discarded.
 
 \subsubsection{Target Network}
 
@@ -195,7 +195,7 @@ To overcome that, a second network, called target network, can be used to provid
 
 \subsubsection{Double Learning}\label{double_learning}
 
-Due to the $\max$ term presented in both equations \ref{qlearning} and \ref{new_qlearning}, the approximation tends to overestimate the Q function value, which can severely impact on stability of the algorithm~\cite{overestimation}. A solution proposed by Hado van Hasselt (2010)~\cite{doubleq2010}, called Double Learning, consists of using two Q functions, $Q_1$ and $Q_2$, that are independently learned. One function is then used to determine the maximizing action and second to estimate its value. As we are already making use of two different networks, Hado van Hasselt's approach can be easily introduced to the update Equation \ref{new_qlearning}. Its augmented version is as follows:
+Due to the $\max$ term presented in both equations \ref{qlearning} and \ref{new_qlearning}, the approximation tends to overestimate the Q function value, which can severely impact on the stability of the algorithm~\cite{overestimation}. A solution proposed by Hado van Hasselt~\cite{doubleq2010}, called Double Learning, consists of using two Q functions, $Q_1$ and $Q_2$, that are independently learned. One function is then used to determine the maximizing action and second to estimate its value. As we are already making use of two different networks, Hado van Hasselt's approach can be easily introduced to the update Equation \ref{new_qlearning}. Its augmented version is as follows:
 
 \begin{equation}\label{double_equation}
 	Q(s, a) \leftarrow Q(s, a) + \alpha (R_{t+1} + \gamma \widetilde{Q}(s', \argmax_{a'}{Q(s', a')}) - Q(s,a))
@@ -231,7 +231,7 @@ Both main and secondary networks used the following architecture:
 			\hline
 			Layer & Number of Units & Activation & Type \\
 			\hline\hline
-			Input layer & - & Linear & - \\ 
+			Input layer & $|$Input$|$ & Linear & - \\ 
 			\hline
 			Hidden layer 1 & 256 & ReLU & Fully-connected\\
 			\hline
@@ -267,7 +267,7 @@ Furthermore, after tuning, the hyperparameters selected were as follows:
 	\end{center}
 \end{table}
 
-Nevertheless, we tried a second approach. An agent based on the TD-Lambda algorithm was also built. In order to approximate the Q-table, it relied on a much simpler linear regressor. Also, since $Q$ is highly nonlinear (see Equation \ref{bellman}), the radial basis function kernel was used as a pre-processing step. The agent's hyperparameters were the following:
+Nevertheless, we tried a second approach. An agent based on the TD-Lambda algorithm was also built. In order to approximate the Q-table, it relied on a much simpler linear regressor. Also, since $Q$ is highly nonlinear, the radial basis function kernel was used as a pre-processing step. The agent's hyperparameters were the following:
 
 \begin{table}[H]
 	\begin{center}
@@ -330,7 +330,7 @@ During our initial tests, the Q-table took a long time to converge to optimal va
 
 The models were trained experiencing $10000$ episodes, each of which had $S_0$ set to a random permutation of size $n = 10$ using NumPy's random permutation generator~\cite{numpy_permut} (see Figure \ref{chart:dist_evolution}). After that, in order for the models to effectively sort a permutation $p$, the exploration rate $\epsilon$ was kept constant and equal to $0.2$, and then the models were run for another $100$ episodes, where $S_0$ was always equal to $p$. The best score among those simulations was considered the model's answer $\hat{d}(p, \iota)$. Finally, we used Kececioglu and Sankoff's greedy algorithm output $|\widetilde{d}(p)|$ and ours for $1000$ random permutations as a way to measure the model's performance.
 
-As we can see in Table \ref{table:results}, one-hot encoding state representation is slightly better than our Min-Max approach. The former beat Kececioglu and Sankoff's in 28.0\% of the simulations, while the latter only in 21.7\%. Nonetheless, investigating more effective representations so as to lead to better generalizations is a pending task. Also, we did not manage to reach convergence using either DDQN and Permutation Characterization or the TD-Lambda agent for permutations of size $n > 8$. Regarding our best RL archicture - DDQN and One-Hot Encoding, it consistently outperformed Kececioglu and Sankoff's. However, converging starts getting tricky and time-consuming as $n$ gets bigger. So, it is still early to define our approach as being \textit{practical}.
+As we can see in Table \ref{table:results}, one-hot encoding state representation is slightly better than our Min-Max approach. The former beat Kececioglu and Sankoff's in 28.0\% of the simulations, while the latter only in 21.7\%. Nonetheless, investigating more effective representations so as to lead to better generalizations is a pending task. Also, we did not manage to reach convergence using either DDQN and Permutation Characterization or the TD-Lambda agent for permutations of size $n > 8$. Regarding our best RL architecture - DDQN and One-Hot Encoding, it consistently outperformed Kececioglu and Sankoff's. However, converging starts getting tricky and time-consuming as $n$ gets bigger. So, it is still early to define our approach as being \textit{practical}.
 
 \begin{table}[H]
 	\begin{center}
