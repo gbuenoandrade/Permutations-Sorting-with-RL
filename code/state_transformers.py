@@ -1013,7 +1013,7 @@ class MaxStateTransformer:
 		self.dimensions = n
 
 	def transform(self, permutation):
-		return permutation / (self._n - 1)
+		return np.atleast_2d(permutation / (self._n - 1))
 
 
 class IdentityStateTransformer:

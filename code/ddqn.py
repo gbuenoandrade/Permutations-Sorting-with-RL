@@ -7,9 +7,8 @@ from keras.layers import Dense
 from keras.models import Sequential
 from keras.optimizers import Adam
 
-
 from util import v_upperbound, reverse_subarray, AtomicInteger, plot_running_avg, plot, \
-	greedy_reversal_sort
+	greedy_reversal_sort, ensure_saved_models_dir
 
 PRETRAIN_WEIGHTS_PATH = './saved_models/pretrain_weights.h5'
 FINAL_WEIGHTS_PATH = './saved_models/final_weights.h5'
@@ -127,6 +126,7 @@ class DDQNAgent:
 				print("%.1f %%" % (i / rows * 100))
 		self.model.fit(states, targets, batch_size=self.batch_size, epochs=epochs, verbose=1, validation_split=0.1)
 		self.update_target_model()
+		ensure_saved_models_dir()
 		self.model.save_weights(PRETRAIN_WEIGHTS_PATH)
 
 	def parallel_pretrain(self, rows=10000, epochs=10, n_threads=8):
@@ -145,6 +145,7 @@ class DDQNAgent:
 		pool.map(f, range(rows))
 		self.model.fit(states, targets, batch_size=self.batch_size, epochs=epochs, verbose=1, validation_split=0.1)
 		self.update_target_model()
+		ensure_saved_models_dir()
 		self.model.save_weights(PRETRAIN_WEIGHTS_PATH)
 
 	def load_pretrain_weights(self):
@@ -208,6 +209,7 @@ class DDQNAgent:
 			scores[e] = score
 			print("Episode:", e, "  score:", score, "  epsilon:", self.epsilon)
 
+		ensure_saved_models_dir()
 		self.model.save_weights(FINAL_WEIGHTS_PATH)
 
 		if plot_rewards:
@@ -236,7 +238,8 @@ class DDQNAgent:
 			plot(scores)
 			plot_running_avg(scores)
 
-	def solve(self, permutation, its=100, max_steps=100, exploit_greedy_trace=False, update_eps=False, update_model=False):
+	def solve(self, permutation, its=100, max_steps=100, exploit_greedy_trace=False, update_eps=False,
+			  update_model=False):
 		ans = None
 		if exploit_greedy_trace:
 			trace = []

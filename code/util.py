@@ -1,5 +1,6 @@
 import collections
 import json
+import pathlib
 import threading
 from collections import deque
 
@@ -45,6 +46,18 @@ def plot_running_avg(x, title='Running Average'):
 	running_avg = get_running_avg(x)
 	plt.plot(running_avg)
 	plt.title(title)
+	plt.show()
+
+
+def plot_running_avgs(xrl, xopt):
+	plt.plot(get_running_avg(xrl), label='RL')
+	plt.plot(get_running_avg(xopt), label='Optimum')
+	plt.xlabel('episodes')
+	plt.ylabel('distance moving average')
+	plt.title('Distance Evolution Throughout Episodes')
+	plt.legend()
+	file = 'saved_models/' + 'dist_evolution' + '.eps'
+	plt.savefig(file, format='eps', dpi=1000)
 	plt.show()
 
 
@@ -186,6 +199,7 @@ class PermutationExactSolver:
 							self._ans[cur_str] = d + 1
 							q.append(cur.copy())
 						reverse_subarray(cur, i, j)
+			ensure_saved_models_dir()
 			to_file(path, self._ans)
 
 	@staticmethod
@@ -217,6 +231,13 @@ def from_file(path):
 		return None
 
 
+def ensure_saved_models_dir():
+	pathlib.Path('saved_models').mkdir(exist_ok=True)
+
+
+# Plot related methods for the report
+
+
 def plot_dashed(xs, ys, labels=None, xlabel='', ylabel='', file='chart'):
 	if not isinstance(xs, collections.Iterable):
 		xs = [xs]
@@ -231,3 +252,143 @@ def plot_dashed(xs, ys, labels=None, xlabel='', ylabel='', file='chart'):
 	file = 'saved_models/' + file + '.eps'
 	plt.savefig(file, format='eps', dpi=1000)
 	plt.show()
+
+
+def compare_agent_to_solver(agent, solver, its=100, solve_its=100, plot_result=True, exploit_greedy_trace=False):
+	scores = np.empty(its)
+	for i in range(its):
+		permutation = agent.env.observation_space.sample()
+		base_result = solver(permutation)
+		rl = agent.solve(permutation, exploit_greedy_trace=exploit_greedy_trace, its=solve_its)
+		scores[i] = rl / (base_result + EPS)
+		print('It:', i, ' Ratio: %.3f' % scores[i])
+	if plot_result:
+		plot(scores)
+		plot_running_avg(scores)
+	scores_mean = scores.mean()
+	print('Mean = %.3f' % scores_mean)
+	return scores_mean
+
+
+def generate_fixed(m, n=10):
+	fixed = []
+	for i in range(m):
+		fixed.append(list(np.random.permutation(n)))
+	to_file('fixed', fixed)
+
+
+def save_ans(solve, label):
+	fixed = from_file('fixed')
+	# fixed = fixed[:100]
+	ans = []
+	for i, perm in enumerate(fixed):
+		perm = np.array(perm)
+		if i % 10 == 0:
+			print('%.2f %%' % (i / len(fixed) * 100))
+		ans.append(solve(perm))
+	to_file('%s_ans' % label, ans)
+
+
+def compare(labels):
+	fixed = from_file('fixed')
+	# fixed = fixed[:100]
+	xs = [range(len(fixed))] * len(labels)
+	ys = []
+	for label in labels:
+		y = from_file(label + '_ans')
+		ys.append(y)
+	plot_dashed(xs, ys, labels)
+
+
+def plot_type1():
+	ygreedy = np.array(from_file('greedy' + '_ans'))
+	yrl = np.array(from_file('rl' + '_ans'))
+	yexact = np.array(from_file('exact' + '_ans'))
+	ygreedy = ygreedy / yexact
+	yrl = yrl / yexact
+
+	print(ygreedy.mean())
+	print(yrl.mean())
+
+	xs = [range(len(yrl))] * 2
+	plot_dashed(
+		xs, (ygreedy, yrl), ('Kececioglu and Sankoff', 'RL'),
+		xlabel='simulations', ylabel='performance ratio', file='test')
+
+
+def plot_type2():
+	flavio = np.array(from_file('flaviostate' + '_ans'))
+	onehot = np.array(from_file('onehot' + '_ans'))
+	maxstate = np.array(from_file('maxstate' + '_ans'))
+	exact = np.array(from_file('exact' + '_ans'))
+
+	flavio = flavio / exact
+	onehot = onehot / exact
+	maxstate = maxstate / exact
+
+	xs = [range(len(flavio))] * 3
+	plot_dashed(
+		xs, (flavio, onehot, maxstate), ('Permutation Characterization', 'One-Hot Encoding', 'Min-Max Normalization'),
+		xlabel='episodes', ylabel='performance ratio', file='states_comp')
+
+
+def plot_type3():
+	ylambda = np.array(from_file('tdlambda' + '_ans'))
+	ydnr = np.array(from_file('dnr' + '_ans'))
+	yexact = np.array(from_file('exact' + '_ans'))
+
+	for i in range(len(yexact)):
+		if abs(yexact[i]) < EPS:
+			ylambda[i] = 1
+			ydnr[i] = 1
+		else:
+			ylambda[i] = ylambda[i] / yexact[i]
+			ydnr[i] = ydnr[i] / yexact[i]
+
+	xs = [range(len(yexact))] * 2
+	plot_dashed(
+		xs, (ylambda, ydnr), ('TD-Lambda', 'DDQN'),
+		xlabel='episodes', ylabel='performance ratio', file='lambda_ddqn')
+
+
+def plot_type4():
+	divs = 30
+	div_sz = 0.01
+
+	ygreedy = np.array(from_file('greedy' + '_ans'))
+	yrl = np.array(from_file('rl' + '_ans'))
+	yexact = np.array(from_file('exact' + '_ans'))
+	ygreedy = ygreedy / yexact
+	yrl = yrl / yexact
+
+	max_ = max(ygreedy.max(), yrl.max())
+	min_ = min(ygreedy.min(), yrl.min())
+	sz = (max_ - min_) / divs
+
+	ans = {}
+	n = len(yrl)
+	for label, y in (('rl', yrl), ('greedy', ygreedy)):
+		vals = [0] * divs
+		for x in y:
+			idx = min(int((x - 1) / div_sz), divs - 1)
+			vals[idx] += 1
+
+		ans[label] = {'[%.2f, %.2f%%)' % (i * div_sz * 100, (i + 1) * 100 * div_sz): vals[i] for i in range(divs)}
+
+	print(ans)
+
+
+def plot_type5():
+	ygreedy = np.array(from_file('greedy' + '_ans'))
+	yrl = np.array(from_file('rl' + '_ans'))
+	yexact = np.array(from_file('exact' + '_ans'))
+	n = len(yrl)
+
+	faster_than_greedy = np.sum(yrl < ygreedy) / n * 100
+	equal_greedy = np.sum(yrl == ygreedy) / n * 100
+	slower_than_greedy = np.sum(yrl > ygreedy) / n * 100
+	avg_ratio = (yrl / yexact).mean()
+	print('faster: %.2f' % faster_than_greedy)
+	print('equal: %.2f' % equal_greedy)
+	print('slower: %.2f' % slower_than_greedy)
+	print('avg: %.4f' % avg_ratio)
