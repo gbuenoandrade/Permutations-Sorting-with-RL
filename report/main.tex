@@ -68,7 +68,7 @@ Finally, as Phylogenetics (the study of evolutionary history and relationships b
 
 Note that finding $d(p, q)$ is equivalent to the problem of finding the distance between some permutation $\alpha$ and the identity permutation $\iota$, where $\alpha = q^{-1} \cdot p$. That is the case because $d(p, q) = d(q^{-1} \cdot p, q^{-1} \cdot q) = d(\alpha, \iota)$. Furthermore, Caprara proved that finding $d(p, \iota)$ is NP-hard~\cite{caprara1999sorting}. That being so, this work proposes using Reinforcement Learning to come up with a heuristic for finding $d(p, \iota)$ for any arbitrary permutation $p$.
 
-In the next Section, we start by introducing several Reinforcement Learning ideas that were used during the project conception. Later, in Section \ref{section:expr}, we conclude by talking about implementation details and discussing our findings.
+In the next section, we start by introducing several Reinforcement Learning ideas that were used during the project conception. Later, in Section \ref{section:expr}, we conclude by talking about implementation details and discussing our findings.
 
 \section{Reinforcement Learning}
 
@@ -76,7 +76,7 @@ This section introduces the main ideas and concepts from Reinforcement Learning 
 
 \subsection{Overview}
 
-Reinforcement Learning (RL), like other branches of Machine Learning, has been drawing a lot of attention from the community in recent years. Google DeepMind's AlphaGo victory over Lee Sedol~\cite{googlelee} - world champion of the game Go, is one out of many examples of recent astonishing applications of the technique. It is based on an agent learning how to accomplish a certain goal based on interactions with the environment.
+Reinforcement Learning (RL), like other branches of Machine Learning, has been drawing a lot of attention from the community in recent years. Google DeepMind's AlphaGo victory over Lee Sedol~\cite{googlelee}, world champion of the game Go, is one out of many examples of recent astonishing applications of the technique. It is based on an agent learning how to accomplish a certain goal based on interactions with the environment.
 
 RL can be thought of as a sequence of episodes. Each of which consists of the agent at an initial state $S_0$. Then, based on a policy $\pi$, where a policy is a function that maps states to actions, it takes an action $a$, ending up at state $S_1$ and receiving some reward $R_1$. This process keeps going until the agent reaches a terminal state. Its goal is to find a function $\pi*$, known as optimal policy, that maximizes the cumulative discounted reward at a given time step $t$:
 
@@ -203,11 +203,11 @@ Due to the $\max$ term presented in both equations \ref{qlearning} and \ref{new_
 
 \section{Experiment}\label{section:expr}
 
-Initially, in Section \ref{state_rep}, we discuss different ways to represent the permutations so we can use function approximation techniques. Later, in Section \ref{arch}, we talk about the agents' architecture and about a technique that was used to speed up the convergence in Section \ref{speed_conv}. Lastly, we present and discuss our results and conclusions.
+Initially, in Section \ref{state_rep}, we discuss different ways to represent the permutations so we can use function approximation techniques. Later, in Section \ref{arch}, we talk about the agents' architecture and about a technique that was used to speed up the convergence in Section \ref{speed_conv}. Lastly, we present and discuss our results (Section \ref{res_disc}) and conclusions (Section \ref{conclusions}).
 
 \subsection{Modeling}
 
-The agents were implemented so as to perform not only reversals, but also another important genome rearrangement: transposition; however, due to limited computer resources available, we decided later to limit our agents to only perform reversals to make training faster. Their goal was to reach the identity permutation $\iota$ while maximizing total reward. 
+The agents were implemented so as to perform not only reversals, but also another important genome rearrangement: transposition. However, due to limited computer resources available, we decided later to limit our agents to only perform reversals to make training faster. Their goal was to reach the identity permutation $\iota$ while maximizing total reward. 
 
 \subsubsection{State Representation}\label{state_rep}
 
@@ -326,11 +326,11 @@ During our initial tests, the Q-table took a long time to converge to optimal va
 
 \end{itemize}
 
-\subsection{Results and Discussion}
+\subsection{Results and Discussion}\label{res_disc}
 
 The models were trained experiencing $10000$ episodes, each of which had $S_0$ set to a random permutation of size $n = 10$ using NumPy's random permutation generator~\cite{numpy_permut} (see Figure \ref{chart:dist_evolution}). After that, in order for the models to effectively sort a permutation $p$, the exploration rate $\epsilon$ was kept constant and equal to $0.2$, and then the models were run for another $100$ episodes, where $S_0$ was always equal to $p$. The best score among those simulations was considered the model's answer $\hat{d}(p, \iota)$. Finally, we used Kececioglu and Sankoff's greedy algorithm output $|\widetilde{d}(p)|$ and ours for $1000$ random permutations as a way to measure the model's performance.
 
-As we can see in Table \ref{table:results}, one-hot encoding state representation is slightly better than our Min-Max approach. The former beat Kececioglu and Sankoff's in 28.0\% of the simulations, while the latter only in 21.7\%. Nonetheless, investigating more effective representations so as to lead to better generalizations is a pending task. Also, we did not manage to reach convergence using either DDQN and Permutation Characterization or the TD-Lambda agent for permutations of size $n > 8$. Regarding our best RL architecture - DDQN and One-Hot Encoding, it consistently outperformed Kececioglu and Sankoff's. However, converging starts getting tricky and time-consuming as $n$ gets bigger. So, it is still early to define our approach as being \textit{practical}.
+As we can see in Table \ref{table:results}, one-hot encoding state representation is slightly better than our Min-Max approach. The former beat Kececioglu and Sankoff's in 28.0\% of the simulations, while the latter only in 21.7\%. Nonetheless, investigating more effective representations so as to lead to better generalizations is a pending task. Also, we did not manage to reach convergence using either DDQN and Permutation Characterization or the TD-Lambda agent for permutations of size $n > 8$. Regarding our best RL architecture, DDQN and One-Hot Encoding, it consistently outperformed Kececioglu and Sankoff's. However, converging starts getting tricky and time-consuming as $n$ gets bigger, convergence was not achieved using any of our methods for permutations of size $n > 10$. So, it is still early to define our approach as being \textit{practical}.
 
 \begin{table}[H]
 	\begin{center}
@@ -358,7 +358,7 @@ As we can see in Table \ref{table:results}, one-hot encoding state representatio
 	\end{center}
 \end{figure}
 
-\subsection{Conclusions}
+\subsection{Conclusions}\label{conclusions}
 
 This work involved building different RL agents to sort permutations by reversals. Interesting results were obtained for small permutations, but performance was a bottleneck when they got bigger. Future work could try to address that by using distributed deep Q-learning methods~\cite{dist_dqnn1, dist_dqnn2} and considering recent findings related to large discrete action spaces~\cite{large_space}.
 
